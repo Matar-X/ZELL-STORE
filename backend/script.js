@@ -119,13 +119,14 @@ async function loginUser(event) {
     const submitBtn = form.querySelector('button[type="submit"]');
 
     try {
-      fetch('/login', {
+
+  const response = await fetch('/login', {
     method: 'POST',
     headers: {
         'Content-Type': 'application/json'
     },
     body: JSON.stringify({ email, password })
-})
+});
         const data = await response.json();
 
         if (!response.ok) {
