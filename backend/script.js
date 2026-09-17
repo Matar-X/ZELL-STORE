@@ -4,7 +4,7 @@ console.log("ZELL SCRIPT CONNECTED");
    API BASE
    غيّر القيمة دي لما ترفع الموقع على سيرفر حقيقي
 ------------------------------ */
-const ZELL_API = "http://localhost:3000";
+const ZELL_API = "fetch('/login', ...)";
 
 /* ------------------------------
    CURRENT USER HELPERS
