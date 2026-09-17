@@ -146,7 +146,7 @@ const OTHER_GOVERNORATES = [
 ];
 
 const SHIPPING_RULES = {
-    delta: { cost: 50, deliveryEstimate: "3 DAYS", zoneLabel: "CAIRO & DELTA" },
+    delta: { cost: 70, deliveryEstimate: "3 DAYS", zoneLabel: "CAIRO & DELTA" },
     other: { cost: 90, deliveryEstimate: "1 WEEK", zoneLabel: "OUTSIDE CAIRO & DELTA" }
 };
 
@@ -369,6 +369,14 @@ app.get("/products", (req, res) => {
     res.json(products);
 });
 
+// إضافة Endpoint لجلب منتج منفرد حسب الـ ID لمشكلة الـ 404
+app.get("/products/:id", (req, res) => {
+    if (!db) return res.status(500).json({ message: "Database unavailable." });
+    const product = db.prepare("SELECT * FROM products WHERE id = ?").get(req.params.id);
+    if (!product) return res.status(404).json({ message: "Product not found." });
+    res.json(product);
+});
+
 app.get("/shipping-zones", (req, res) => {
     const zones = [
         ...CAIRO_DELTA_GOVERNORATES.map(name => ({ governorate: name, zone: "delta", ...SHIPPING_RULES.delta })),
@@ -449,6 +457,33 @@ app.get("/me", authenticateToken, (req, res) => {
             isBirthdayToday: isBirthdayToday(req.user.birthdate)
         }
     });
+});
+
+// إضافة مسار تحديث البروفايل لتفعيل حفظ التعديلات وحل مشكلة الـ PATCH
+app.patch("/profile", authenticateToken, async (req, res) => {
+    if (!db) return res.status(500).json({ message: "Database unavailable." });
+    const { name, birthdate } = req.body;
+    const userId = req.user.id;
+
+    try {
+        const currentUser = db.prepare("SELECT * FROM users WHERE id = ?").get(userId);
+        if (!currentUser) return res.status(404).json({ message: "User not found." });
+
+        const newName = name ? String(name).trim() : currentUser.name;
+        // لا يمكن تغيير تاريخ الميلاد إذا تم تسجيله من قبل بناءً على منطق الواجهة
+        const newBirthdate = (!currentUser.birthdate && birthdate) ? String(birthdate).trim() : currentUser.birthdate;
+
+        db.prepare("UPDATE users SET name = ?, birthdate = ? WHERE id = ?").run(newName, newBirthdate, userId);
+
+        const updatedUser = db.prepare("SELECT id, name, email, role, birthdate FROM users WHERE id = ?").get(userId);
+        res.json({
+            message: "Profile updated successfully.",
+            user: updatedUser
+        });
+    } catch (error) {
+        console.error("Profile update error:", error);
+        res.status(500).json({ message: "Internal server error." });
+    }
 });
 
 app.post("/logout", authenticateToken, (req, res) => {
