@@ -10,12 +10,23 @@ const PORT = 3000;
 
 // Connect to SQLite Database
 // Connect to SQLite Database (Safely wrapped for Vercel)
+// Connect to SQLite Database (Safely wrapped)
 let db;
 try {
     db = new Database("zell.db");
 } catch (err) {
     console.log("SQLite local file access skipped on Vercel environment.");
 }
+
+// دالة حماية لمنع انهيار السيرفر عند استدعاء db في Serverless
+const safeDbPrepare = (query) => {
+    try {
+        if (db) return db.prepare(query);
+    } catch (e) {
+        console.log("DB Execution skipped:", e.message);
+    }
+    return { run: () => {}, all: () => [], get: () => null };
+};
 
 // إضافة أعمدة تلقائياً لجدول users في حال عدم وجودها
 try {
@@ -836,10 +847,9 @@ const path = require('path');
 // إتاحة كافة ملفات الـ HTML/CSS/JS الثابتة من المجلد الرئيسي
 app.use(express.static(path.join(__dirname, '..')));
 
-// توجيه الصفحة الرئيسية مباشرة إلى login.html
+// توجيه الصفحة الرئيسية مباشرة إلى test.html
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, '..', 'test.html'));
 });
 
-// Export application for Vercel Serverless Function
 module.exports = app;
