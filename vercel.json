@@ -1,18 +1,17 @@
 {
   "version": 2,
-  "public": true,
-  "routes": [
+  "rewrites": [
     {
-      "src": "/(.*\\.(css|js|png|jpg|jpeg|svg|ico|html))",
-      "dest": "/$1"
-    },
-    {
-      "src": "/api/(.*)",
+      "source": "/api/:path*",
       "destination": "/backend/test.js"
     },
     {
-      "src": "/(.*)",
-      "destination": "/backend/test.js"
+      "source": "/",
+      "destination": "/backend/test.html"
+    },
+    {
+      "source": "/:path*",
+      "destination": "/backend/:path*"
     }
   ]
 }
