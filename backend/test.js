@@ -5,6 +5,16 @@ const cors = require("cors");
 const nodemailer = require("nodemailer");
 const path = require("path");
 
+// خدمة الملفات الثابتة من المجلد الرئيسي
+app.use(express.static(path.join(__dirname, "..")));
+
+// Route احتياطي للصفحة الرئيسية
+app.get("/", (req, res) => {
+    res.sendFile(path.join(__dirname, "..", "test.html"));
+});
+
+module.exports = app;
+
 const app = express();
 
 // ==============================
@@ -118,6 +128,8 @@ app.get("/products", (req, res) => {
         res.json([]);
     }
 });
+
+<link rel="stylesheet" href="style.css"></link>
 
 // Export App for Vercel Serverless
 module.exports = app;
