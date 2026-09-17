@@ -9,7 +9,13 @@ const app = express();
 const PORT = 3000;
 
 // Connect to SQLite Database
-const db = new Database("zell.db");
+// Connect to SQLite Database (Safely wrapped for Vercel)
+let db;
+try {
+    db = new Database("zell.db");
+} catch (err) {
+    console.log("SQLite local file access skipped on Vercel environment.");
+}
 
 // إضافة أعمدة تلقائياً لجدول users في حال عدم وجودها
 try {
@@ -825,17 +831,15 @@ app.post("/checkout", async (req, res) => {
 });
 
 // START SERVER
-app.listen(PORT, () => {
-    console.log(`Server is running on http://localhost:${PORT}`);
-    checkAndSendBirthdayEmails(); // Runs on server start
-});
-
 const path = require('path');
 
-// إتاحة كافة ملفات الـ HTML/CSS/JS الثابتة
-app.use(express.static(path.join(__dirname, '.')));
+// إتاحة كافة ملفات الـ HTML/CSS/JS الثابتة من المجلد الرئيسي
+app.use(express.static(path.join(__dirname, '..')));
 
-// توجيه الصفحة الرئيسية مباشرة إلى login.html أو index.html
+// توجيه الصفحة الرئيسية مباشرة إلى login.html
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'login.html'));
+  res.sendFile(path.join(__dirname, '..', 'test.html'));
 });
+
+// Export application for Vercel Serverless Function
+module.exports = app;
