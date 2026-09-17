@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+
+
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>AUTHORIZED ACCESS | ZELL</title>
+
+   <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <div class="noise"></div>
+
+    <header class="page-header centered-header">
+
+       <a href="test.html" class="brand-link">
+    <img src="images/drawing.svg" alt="ZELL">
+</a>
+
+    </header>
+
+    <main class="login-page">
+
+        <div class="login-box">
+
+            <p class="eyebrow">
+                RESTRICTED ACCESS
+            </p>
+
+            <h1>
+                WELCOME BACK
+            </h1>
+
+            <p class="login-description">
+                Access your ZELL archive.
+            </p>
+
+            <form onsubmit="loginUser(event)">
+
+                <div class="input-group">
+
+                    <label>
+                        EMAIL
+                    </label>
+
+                    <input
+                        type="email"
+                        placeholder="your@email.com"
+                        required
+                    >
+
+                </div>
+
+                <div class="input-group">
+
+                    <label>
+                        PASSWORD
+                    </label>
+
+                    <input
+                        type="password"
+                        placeholder="••••••••"
+                        required
+                    >
+
+                </div>
+
+                <button
+                    type="submit"
+                    class="authenticate-button"
+                >
+                    AUTHENTICATE
+                </button>
+
+            </form>
+
+            <div class="switch-account">
+
+                <p>
+                    DON'T HAVE AN ACCOUNT?
+                </p>
+
+                <a
+                    href="signup.html"
+                    class="switch-button"
+                >
+                    CREATE ONE
+                </a>
+
+            </div>
+
+            <p
+                id="login-message"
+                class="login-message"
+            ></p>
+
+            <a
+                href="test.html"
+                class="return-link"
+            >
+                ← RETURN TO ARCHIVE
+            </a>
+
+        </div>
+
+    </main>
+
+    <footer class="minimal-footer">
+
+    <span>ZELL</span>
+
+    <span>ARCHIVE / CLASSIFIED</span>
+
+</footer>
+    <script src="script.js"></script>
+
+
+    
+</body>
+</html>

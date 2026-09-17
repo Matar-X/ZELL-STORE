@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CASES FILE | ZELL</title>
+    <link rel="stylesheet" href="style.css">
+  <style>
+    body {
+        color: #ffffff;
+        margin: 0;
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    .cases-container {
+        flex-grow: 1;
+        padding-top: 20px;
+        padding-bottom: 60px;
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
+    }
+
+    /* العنوان بدون أي إضاءة/توهج ومع خط رفيع */
+    .page-title {
+        font-family: 'Inter', sans-serif;
+        font-size: 2.6rem;
+        text-align: center;
+        margin-top: 0;
+        margin-bottom: 35px;
+        text-transform: uppercase;
+        letter-spacing: 4px;
+        color: #ffffff;
+        font-weight: 500; /* خط رفيع وانسيابي */
+        text-shadow: none;  /* إلغاء التوهج/الإضاءة بالكامل */
+    }
+
+    .cases-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        width: 100%;
+    }
+
+    .case-card {
+        background: rgba(255, 255, 255, 0.02);
+        border-top: 1px solid rgba(255, 255, 255, 0.12);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+        border-left: none;
+        border-right: none;
+        padding: 25px 50px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+        transition: all 0.3s ease;
+        box-sizing: border-box;
+        width: 100%;
+    }
+
+    .case-card:hover {
+        border-color: rgba(255, 255, 255, 0.3);
+        background: rgba(255, 255, 255, 0.05);
+    }
+
+    .case-info {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .case-status {
+        font-family: 'Inter', sans-serif;
+        font-size: 0.7rem;
+        color: #777777;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        font-weight: 400;
+    }
+
+    /* عنوان القضية داخل الخانة بخط أنحف وبدون إضاءة */
+    .case-title {
+        font-family: 'Inter', sans-serif;
+        color: #ffffff;
+        font-size: 1.3rem;
+        margin: 0;
+        font-weight: 500;
+        letter-spacing: 1px;
+    }
+
+    .case-description {
+        font-family: 'Inter', sans-serif;
+        color: #aaaaaa;
+        font-size: 0.85rem;
+        margin: 0;
+        line-height: 1.4;
+        font-weight: 300;
+    }
+
+    .open-case-btn {
+        font-family: 'Inter', sans-serif;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 12px 28px;
+        background: transparent;
+        border: 1px solid #ffffff;
+        color: #ffffff;
+        text-decoration: none;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        letter-spacing: 2px;
+        font-weight: 500;
+        white-space: nowrap;
+        transition: all 0.3s ease;
+        height: fit-content;
+    }
+
+    .open-case-btn:hover {
+        background: #ffffff;
+        color: #000000;
+    }
+
+    @media (max-width: 768px) {
+        .case-card {
+            flex-direction: column;
+            align-items: flex-start;
+            padding: 20px;
+        }
+        .open-case-btn {
+            width: 100%;
+            margin-top: 10px;
+        }
+    }
+</style>
+</head>
+<body>
+
+    <!-- الهيدر الموحد القياسي (اللوجو شمال والأيقونات يمين) -->
+    <header class="page-header">
+        <a href="test.html" class="brand-link">
+            <img src="images/drawing.svg" alt="ZELL Logo" class="page-logo">
+        </a>
+        <div class="header-right">
+            <a href="cart.html" class="cart-icon-link" aria-label="View Shopping Cart">
+                <svg class="cart-svg" xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+                    <line x1="3" y1="6" x2="21" y2="6"></line>
+                    <path d="M16 10a4 4 0 0 1-8 0"></path>
+                </svg>
+                <span id="cart-badge" class="cart-badge">0</span>
+            </a>
+            <button id="menuToggleBtn" class="menu-toggle-btn" aria-label="Open Menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+        </div>
+    </header>
+
+    <!-- المحتوى الرئيسي -->
+    <div class="cases-container">
+        <h1 class="page-title">CASES FILE</h1>
+
+        <ul class="cases-list">
+            
+            <!-- القضية الأولى: CASE_017 -->
+            <li class="case-item">
+                <article class="case-card">
+                    <div class="case-info">
+                        <span class="case-status">STATUS: OPEN</span>
+                        <h2 class="case-title">CASE_017</h2>
+                        <p class="case-description">Detailed review of evidence and files related to the case investigation.</p>
+                    </div>
+                    <a href="case.html" class="open-case-btn">VIEW FILE</a>
+                </article>
+            </li>
+
+            <!-- مستقبلاً: عند إضافة قضية جديدة (مثلاً CASE_018)، انسخ عنصر <li> بالكامل وضعه أسفله هنا مباشرة -->
+
+        </ul>
+    </div>
+
+    <!-- القائمة الجانبية -->
+  <div id="sideNavOverlay" class="sidenav-overlay"></div>
+    <aside id="sideNavDrawer" class="sidenav-drawer">
+        <div class="sidenav-header">
+            <span class="sidenav-title">NAVIGATION</span>
+            <button id="closeSideNav" class="sidenav-close">&times;</button>
+        </div>
+
+        <div class="sidenav-links">
+            <a href="case.html" class="sidenav-link">CASE 017</a>
+            <a href="imagination.html" class="sidenav-link mobile-only">IMAGINATION S.</a>
+            <a href="impact.html" class="sidenav-link mobile-only">IMPACT S.</a>
+
+            <div class="sidenav-divider"></div>
+
+            <!-- ANONYMOUS USER OPTIONS -->
+            <a href="login.html" id="sideSignInLink" class="sidenav-link">SIGN IN / REGISTER</a>
+
+            <!-- LOGGED IN USER OPTIONS -->
+            <a href="account.html" id="sideAccountLink" class="sidenav-link" hidden>ACCOUNT</a>
+            <a href="orders.html" id="sideOrdersLink" class="sidenav-link" hidden>MY ORDERS</a>
+            <button id="sideLogoutBtn" class="sidenav-link logout-btn" hidden onclick="logoutUser()">LOG OUT</button>
+        </div>
+    </aside>
+
+        <!-- كود العناصر الداخلية للقائمة الجانبية -->
+    </nav>
+
+    <script src="script.js"></script>
+    
+  <footer class="minimal-footer">
+        <span>ZELL — THE RENEWAL SERIES</span>
+    </footer>
+
+</body>
+</html>

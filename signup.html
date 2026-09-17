@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CREATE ACCOUNT | ZELL</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<div class="noise"></div>
+
+<header class="page-header centered-header">
+   <a href="test.html" class="brand-link">
+    <img src="images/drawing.svg" alt="ZELL">
+</a>
+</header>
+
+<main class="login-page">
+
+    <div class="login-box">
+
+        <p class="eyebrow">
+            NEW ACCESS
+        </p>
+
+        <h1>
+            SIGN UP
+        </h1>
+
+        <p class="login-description">
+            Create your ZELL archive.
+        </p>
+
+        <form onsubmit="registerUser(event)">
+
+            <div class="input-group">
+                <label>NAME</label>
+                <input type="text" placeholder="your name" required>
+            </div>
+
+            <div class="input-group">
+                <label>EMAIL</label>
+                <input type="email" placeholder="your@email.com" required>
+            </div>
+
+            <div class="input-group">
+                <label>BIRTHDATE</label>
+                <input type="date" id="registerBirthdate">
+            </div>
+
+            <div class="input-group">
+                <label>PASSWORD</label>
+                <input type="password" placeholder="••••••••" required>
+            </div>
+
+            <button type="submit" class="authenticate-button">
+                CREATE ACCOUNT
+            </button>
+
+        </form>
+
+        <p id="register-message" class="login-message"></p>
+
+      <div class="switch-account">
+        <p>ALREADY HAVE AN ACCOUNT?</p>
+        <a href="login.html" class="switch-button">LOGIN</a>
+    </div>
+
+        <a href="test.html" class="return-link">
+            ← RETURN TO ARCHIVE
+        </a>
+
+    </div>
+
+</main>
+
+<footer class="minimal-footer">
+    <span>ZELL — THE RENEWAL SERIES</span>
+</footer>
+
+<script src="./script.js"></script>
+
+</body>
+</html>

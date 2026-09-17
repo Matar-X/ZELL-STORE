@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IMAGINATION | ZELL</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="noise"></div>
+
+<!-- GLOBAL HEADER -->
+<header class="page-header">
+    <a href="test.html" class="brand-link">
+        <img src="images/drawing.svg" alt="ZELL">
+    </a>
+    <div class="header-right">
+        <a href="cart.html" class="cart-icon-link" aria-label="View Shopping Cart">
+            <svg class="cart-svg" xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+                <line x1="3" y1="6" x2="21" y2="6"></line>
+                <path d="M16 10a4 4 0 0 1-8 0"></path>
+            </svg>
+            <span id="cart-badge" class="cart-badge">0</span>
+        </a>
+        <button id="menuToggleBtn" class="menu-toggle-btn" aria-label="Open Menu">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+    </div>
+</header>
+
+<!-- SIDENAV DRAWER & OVERLAY -->
+<div id="sideNavOverlay" class="sidenav-overlay"></div>
+<aside id="sideNavDrawer" class="sidenav-drawer">
+    <button id="closeSideNav" class="close-sidenav">&times;</button>
+    <nav class="sidenav-menu">
+        <a href="test.html">HOME / ARCHIVE</a>
+        <a href="case.html">CASE 017</a>
+        <a href="cart.html">CART</a>
+        <a href="login.html" id="sideSignInLink">SIGN IN</a>
+        <a href="account.html" id="sideAccountLink" hidden>ACCOUNT</a>
+        <button id="sideLogoutBtn" onclick="logoutUser()" hidden style="background:none; border:none; color:#ff5555; cursor:pointer; text-align:left; padding:0; font:inherit;">LOG OUT</button>
+    </nav>
+</aside>
+
+<main class="page-content">
+    <section class="story-title">
+        <p class="eyebrow">THE RENEWAL SERIES / 01</p>
+        <h1 id="productCollection">IMAGINATION</h1>
+        <p id="storyDescription">Some things leave before we notice.</p>
+    </section>
+
+    <section class="evidence-product">
+        <div class="evidence-visual">
+            <div class="flip-card" id="productFlipCard">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <img id="productImage" src="images/sudden-abduction.png" alt="ZELL Imagination" class="evidence-image">
+                    </div>
+                    <div class="flip-card-back">
+                        <!-- 👇 حط هنا اسم صورة الهودي من الضهر بتاعة IMAGINATION -->
+                        <img src="images/front.hody.imag.png" alt="ZELL Imagination Back" class="evidence-image">
+                    </div>
+                </div>
+            </div>
+            <button id="flipButton" class="flip-button" aria-label="Flip product view" type="button">
+                <!-- 👇 حط هنا اسم صورة زرار نقطة المية -->
+                <img src="images/imag.logo.png" alt="" class="flip-button-icon">
+            </button>
+        </div>
+        <div class="evidence-info">
+            <p class="evidence-code">SUDDEN ABDUCTION / CASE_017</p>
+            <h2 id="productName">THE LAST SEAT</h2>
+            <p id="productDescription" class="evidence-description">The remaining trace before the silent displacement.</p>
+            
+            <div class="file-details">
+                <div><span>TRACE</span><strong>CHAIR</strong></div>
+                <div><span>STATUS</span><strong>UNSOLVED</strong></div>
+                <div><span>SOURCE</span><strong>CONFIDENTIAL</strong></div>
+                <div><span>ARCHIVE VALUE</span><strong id="priceContainer"><span id="productPrice">1000 EGP</span></strong></div>
+            </div>
+
+            <div id="registerNote" class="register-note" hidden>
+                <p>
+                    SIGN IN AND UNLOCK <strong>950 EGP</strong> ON THIS PIECE — 5% OFF EVERY ARCHIVE ITEM.
+                </p>
+                <a href="signup.html" class="register-note-link">CREATE ACCOUNT &rarr;</a>
+            </div>
+
+            <div class="product-actions">
+                <button class="discover-button" id="addToCartButton">ADD TO CART</button>
+                <a href="impact.html" class="discover-button">CONTINUE CASE</a>
+            </div>
+        </div>
+    </section>
+</main>
+
+<div class="product-card">
+  
+
+  <!-- قسم المقاسات -->
+  <div class="size-options">
+    <button class="size-btn">M</button>
+    <button class="size-btn">L</button>
+    <button class="size-btn">XL</button>
+    <button class="size-btn">XXL</button>
+  </div>
+</div>
+
+<footer class="minimal-footer">
+    <span>ZELL — THE RENEWAL SERIES</span>
+    <span>IMAGINATION / 01</span>
+</footer>
+
+<script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CART | ZELL</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="noise"></div>
+
+<!-- GLOBAL HEADER -->
+<header class="page-header">
+    <a href="test.html" class="brand-link">
+        <img src="images/drawing.svg" alt="ZELL">
+    </a>
+
+   <div class="header-right">
+    <a href="checkout.html" class="cart-icon-link" aria-label="View Shopping Cart">
+        <!-- أيقونة حقيبة التسوق الموحدة SVG -->
+        <svg class="cart-svg" xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <path d="M16 10a4 4 0 0 1-8 0"></path>
+        </svg>
+        <span id="cart-badge" class="cart-badge">0</span>
+    </a>
+    
+    <button id="menuToggleBtn" class="menu-toggle-btn" aria-label="Open Menu">
+        <span></span>
+        <span></span>
+        <span></span>
+    </button>
+</div>
+
+</header>
+
+<!-- SIDENAV DRAWER & OVERLAY -->
+<div id="sideNavOverlay" class="sidenav-overlay"></div>
+<aside id="sideNavDrawer" class="sidenav-drawer">
+    <button id="closeSideNav" class="close-sidenav">&times;</button>
+    <nav class="sidenav-menu">
+        <a href="test.html">HOME / ARCHIVE</a>
+        <a href="case.html">CASE 017</a>
+        <a href="cart.html">CART</a>
+        <a href="login.html" id="sideSignInLink">SIGN IN</a>
+        <a href="account.html" id="sideAccountLink" hidden>ACCOUNT</a>
+        <button id="sideLogoutBtn" onclick="logoutUser()" hidden style="background:none; border:none; color:#ff5555; cursor:pointer; text-align:left; padding:0; font:inherit;">LOG OUT</button>
+    </nav>
+</aside>
+
+<section class="story-title">
+    <p class="eyebrow">YOUR RESERVATIONS</p>
+    <h1>SHOPPING CART</h1>
+</section>
+
+<section class="evidence-product" style="grid-template-columns: 1fr; max-width: 800px; padding-bottom: 60px;">
+    <div class="evidence-info">
+        <div id="cartItemsContainer" class="file-details">
+            <!-- Dynamic Cart Items -->
+        </div>
+
+        <div class="trace-line" style="margin-top: 20px;">
+            <span>TOTAL</span>
+            <div class="line"></div>
+            <strong id="cartTotalAmount" style="color: #eee; font-size: 16px;">0 EGP</strong>
+        </div>
+
+        <div style="display: flex; gap: 15px; margin-top: 30px;">
+            <button class="discover-button" onclick="clearCart()" style="border-color: #555; color: #888;">
+                CLEAR CART
+            </button>
+            <a href="checkout.html" class="discover-button" style="text-align: center; flex: 1;">
+                PROCEED TO CHECKOUT &rarr;
+            </a>
+        </div>
+    </div>
+</section>
+
+<footer class="minimal-footer">
+    <span>
+        ZELL — THE RENEWAL SERIES
+    </span>
+    <span>
+        ORDER DISPATCH / CLASSIFIED
+    </span>
+</footer>
+
+<script>
+    document.addEventListener("DOMContentLoaded", renderCart);
+
+    function renderCart() {
+        const cart = JSON.parse(localStorage.getItem("zellCart")) || [];
+        const container = document.getElementById("cartItemsContainer");
+        const totalEl = document.getElementById("cartTotalAmount");
+
+        if (cart.length === 0) {
+            container.innerHTML = `
+                <div style="padding: 30px 0; color: #666; font-size: 12px; letter-spacing: 2px; text-align: center;">
+                    YOUR CART IS CURRENTLY EMPTY.
+                </div>
+            `;
+            totalEl.textContent = "0 EGP";
+            return;
+        }
+
+        let total = 0;
+        let html = "";
+
+        cart.forEach((item, index) => {
+            const itemTotal = item.price * (item.quantity || 1);
+            total += itemTotal;
+            html += `
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 18px 0;">
+                    <div>
+                        <span style="color: #eee; font-size: 12px; display: block; margin-bottom: 4px;">${item.name}</span>
+                        <span style="color: #666; font-size: 9px;">QUANTITY: ${item.quantity || 1}</span>
+                    </div>
+                    <div>
+                        <strong style="color: #aaa; margin-right: 15px;">${itemTotal} EGP</strong>
+                        <button onclick="removeItem(${index})" style="background: none; border: none; color: #ff5555; cursor: pointer; font-size: 10px;">[REMOVE]</button>
+                    </div>
+                </div>
+            `;
+        });
+
+        container.innerHTML = html;
+        totalEl.textContent = `${total} EGP`;
+    }
+
+    function removeItem(index) {
+        let cart = JSON.parse(localStorage.getItem("zellCart")) || [];
+        cart.splice(index, 1);
+        localStorage.setItem("zellCart", JSON.stringify(cart));
+        renderCart();
+    }
+
+    function clearCart() {
+        localStorage.removeItem("zellCart");
+        renderCart();
+    }
+</script>
+
+
+    <script src="script.js"></script>
+</body>
+</html>
+
+</body>
+</html>

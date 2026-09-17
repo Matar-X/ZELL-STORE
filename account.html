@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+
+
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>ZELL — Account</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <header class="page-header centered-header">
+       <a href="test.html" class="brand-link">
+    <img src="images/drawing.svg" alt="ZELL Logo">
+</a>
+
+    </header>
+
+    <main class="account-page">
+        <div class="account-box">
+
+            <p class="eyebrow">PERSONAL ARCHIVE</p>
+
+            <div class="profile-section">
+                <img
+                    id="profileImage"
+                    class="profile-image"
+                    src="images/default-profile.png"
+                    alt="Profile picture"
+                >
+
+                <label for="imageInput" class="change-photo">
+                    CHANGE PHOTO
+                </label>
+
+                <input
+                    type="file"
+                    id="imageInput"
+                    accept="image/*"
+                    hidden
+                >
+            </div>
+
+            <h1 id="welcomeMessage"></h1>
+
+            <p id="userEmail"></p>
+
+            <!-- PROFILE DETAILS -->
+
+            <form id="profileForm" class="profile-form">
+
+                <p class="eyebrow">RECORD DETAILS</p>
+
+                <div class="input-group">
+                    <label for="profileNameInput">FULL NAME</label>
+                    <input
+                        type="text"
+                        id="profileNameInput"
+                        placeholder="your name"
+                        maxlength="60"
+                        required
+                    >
+                </div>
+
+                <div class="input-group birthdate-group">
+                    <label for="profileBirthdateInput">BIRTHDATE</label>
+                    <input
+                        type="date"
+                        id="profileBirthdateInput"
+                    >
+                    <p id="birthdateNote" class="birthdate-note"></p>
+                </div>
+
+                <button
+                    type="submit"
+                    id="saveProfileBtn"
+                    class="authenticate-button"
+                >
+                    SAVE CHANGES
+                </button>
+
+                <p id="profileMessage" class="header-link-message"></p>
+
+            </form>
+
+            <button
+                type="button"
+                class="authenticate-button"
+                onclick="logoutUser()"
+            >
+                LOGOUT
+            </button>
+
+        </div>
+    </main>
+
+    <!-- IMAGE EDITOR -->
+
+    <div id="imageEditor" class="image-editor" hidden>
+
+        <div class="image-editor-box">
+
+            <p class="eyebrow">ADJUST PROFILE IMAGE</p>
+
+            <div class="crop-area">
+                <img id="cropImage" src="" alt="Image to adjust">
+            </div>
+
+            <div class="zoom-control">
+                <label for="zoomRange">ZOOM</label>
+
+                <input
+                    type="range"
+                    id="zoomRange"
+                    min="1"
+                    max="3"
+                    step="0.05"
+                    value="1"
+                >
+            </div>
+
+            <div class="crop-actions">
+                <button
+                    type="button"
+                    id="cancelCrop"
+                    class="editor-button"
+                >
+                    CANCEL
+                </button>
+
+                <button
+                    type="button"
+                    id="saveCrop"
+                    class="editor-button"
+                >
+                    SAVE PHOTO
+                </button>
+            </div>
+
+        </div>
+
+    </div>
+
+    <footer class="minimal-footer">
+        <span>ZELL — THE RENEWAL SERIES</span>
+    </footer>
+
+    <script src="script.js"></script>
+
+</body>
+</html>

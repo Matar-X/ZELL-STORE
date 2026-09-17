@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CHECKOUT | ZELL</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<div class="noise"></div>
+
+<!-- GLOBAL HEADER -->
+<header class="page-header">
+    <a href="test.html" class="brand-link">
+        <img src="images/drawing.svg" alt="ZELL">
+    </a>
+
+   <div class="header-right">
+    <a href="checkout.html" class="cart-icon-link" aria-label="View Shopping Cart">
+        <svg class="cart-svg" xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <path d="M16 10a4 4 0 0 1-8 0"></path>
+        </svg>
+        <span id="cart-badge" class="cart-badge">0</span>
+    </a>
+    
+    <button id="menuToggleBtn" class="menu-toggle-btn" aria-label="Open Menu">
+        <span></span>
+        <span></span>
+        <span></span>
+    </button>
+</div>
+</header>
+
+<!-- SIDENAV DRAWER & OVERLAY -->
+<div id="sideNavOverlay" class="sidenav-overlay"></div>
+<aside id="sideNavDrawer" class="sidenav-drawer">
+    <button id="closeSideNav" class="close-sidenav">&times;</button>
+    <nav class="sidenav-menu">
+        <a href="test.html">HOME / ARCHIVE</a>
+        <a href="case.html">CASES</a>
+        <a href="cart.html">CART</a>
+        <a href="login.html" id="sideSignInLink">SIGN IN</a>
+        <a href="account.html" id="sideAccountLink" hidden>ACCOUNT</a>
+        <button id="sideLogoutBtn" onclick="logoutUser()" hidden style="background:none; border:none; color:#ff5555; cursor:pointer; text-align:left; padding:0; font:inherit;">LOG OUT</button>
+    </nav>
+</aside>
+
+<section class="story-title" style="padding-bottom: 40px;">
+    <p class="eyebrow">
+        ORDER AUTHORIZATION / SECURE CHECKOUT
+    </p>
+    <h1>
+        CHECKOUT
+    </h1>
+    <p>
+        Provide destination details to dispatch your items.
+    </p>
+</section>
+
+<section class="evidence-product" style="padding-top: 0; gap: 60px;">
+
+    <!-- Left side: Order Items Summary -->
+    <div class="evidence-info">
+        <p class="evidence-code">
+            RESERVED OBJECTS
+        </p>
+
+        <div id="checkoutCartItems" class="file-details" style="margin-bottom: 25px;">
+            <div style="padding: 20px 0; color: #666; font-size: 11px; letter-spacing: 2px;">
+                LOADING CART DATA...
+            </div>
+        </div>
+
+        <div class="trace-line">
+            <span>TOTAL AMOUNT</span>
+            <div class="line"></div>
+            <strong id="checkoutTotal" style="color: #eee; font-size: 14px; letter-spacing: 2px;">0 EGP</strong>
+        </div>
+    </div>
+
+    <!-- Right side: Shipping Information Form -->
+    <div class="header-link-box" style="margin: 0;">
+        <p class="evidence-code" style="text-align: left; margin-left: 10px;">
+            SHIPPING DESTINATION
+        </p>
+
+       <form id="checkoutForm">
+    <div class="input-group">
+        <label for="customerName">FULL NAME</label>
+        <input type="text" id="customerName" placeholder="Enter recipient full name" required>
+    </div>
+
+    <div class="input-group">
+        <label for="customerEmail">EMAIL ADDRESS</label>
+        <input type="email" id="customerEmail" placeholder="Enter your email" required>
+    </div>
+
+    <div class="input-group">
+        <label for="customerPhone">PHONE NUMBER</label>
+        <input type="tel" id="customerPhone" placeholder="Enter mobile number" required>
+    </div>
+
+    <div class="input-group">
+        <label for="customerGovernorate">GOVERNORATE</label>
+        <select id="customerGovernorate" required>
+            <option value="">LOADING ZONES...</option>
+        </select>
+        <p id="deliveryNote" class="delivery-note">SELECT A GOVERNORATE TO CALCULATE SHIPPING.</p>
+    </div>
+
+    <div class="input-group">
+        <label for="customerAddress">DELIVERY ADDRESS</label>
+        <input type="text" id="customerAddress" placeholder="Street, Building No., Apartment" required>
+    </div>
+
+    <div class="input-group">
+        <label for="couponInput">PROMO CODE</label>
+        <div style="display: flex; gap: 10px;">
+            <input type="text" id="couponInput" placeholder="Enter coupon code">
+            <button type="button" id="applyCouponBtn" onclick="applyDiscount(event)" class="header-link-button" style="width: auto; padding: 0 20px;">APPLY</button>
+        </div>
+        <p id="couponMessage" style="font-size: 12px; margin-top: 5px;"></p>
+    </div>
+
+    <div class="file-details" style="margin-top: 20px; border-top: 1px solid #222; padding-top: 15px;">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+            <span>SUBTOTAL</span>
+            <strong id="subtotalAmount" style="color: #aaa;">0 EGP</strong>
+        </div>
+        <div id="discountRow" style="display: none; justify-content: space-between; margin-bottom: 8px;">
+            <span id="discountLabel">DISCOUNT</span>
+            <strong id="discountAmount" style="color: #4CAF50;">-0 EGP</strong>
+        </div>
+        <div id="shippingRow" style="display: none; justify-content: space-between; margin-bottom: 8px;">
+            <span id="shippingLabel">SHIPPING</span>
+            <strong id="shippingAmount" style="color: #aaa;">0 EGP</strong>
+        </div>
+        <div style="display: flex; justify-content: space-between; border-top: 1px dashed #333; padding-top: 8px;">
+            <span>TOTAL AMOUNT</span>
+            <strong id="finalTotalAmount" style="color: #fff;">0 EGP</strong>
+        </div>
+    </div>
+
+    <div class="input-group" style="margin-top: 20px;">
+        <button type="button" class="header-link-button" id="submitOrderBtn">
+            CONFIRM & PLACE ORDER
+        </button>
+    </div>
+
+    <p id="orderMessage" style="display: none; color: #4dff88; text-align: center; margin-top: 15px; font-weight: bold;"></p>
+</form>
+
+        <p id="checkoutMessage" class="header-link-message"></p>
+
+        <a href="cart.html" class="return-link">
+            &larr; RETURN TO CART
+        </a>
+    </div>
+
+</section>
+
+<footer class="minimal-footer">
+    <span>
+        ZELL — THE RENEWAL SERIES
+    </span>
+    <span>
+        ORDER DISPATCH / CLASSIFIED
+    </span>
+</footer>
+
+<script src="script.js"></script>
+</body>
+</html>

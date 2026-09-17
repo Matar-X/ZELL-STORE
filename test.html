@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZELL | THE RENEWAL SERIES</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body class="home-page">
+
+    <div class="noise"></div>
+
+    <!-- MAIN NAVIGATION HEADER -->
+    <header class="main-header">
+        
+        <!-- TOP LEFT: BRAND LOGO -->
+        <div class="header-left">
+            <a href="test.html" class="brand-link">
+                <img src="images/drawing.svg" alt="ZELL" class="main-logo">
+            </a>
+        </div>
+
+        <!-- TOP CENTER: SERIOUS LINKS -->
+        <nav class="header-center">
+            <a href="imagination.html" class="nav-link">IMAGINATION S.</a>
+            <a href="impact.html" class="nav-link">IMPACT S.</a>
+        </nav>
+
+        <!-- TOP RIGHT: CART & HAMBURGER MENU -->
+        <div class="header-right">
+            <!-- CART BAG ICON -->
+            <a href="cart.html" class="cart-button" title="View Shopping Cart">
+                <svg class="cart-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+                    <line x1="3" y1="6" x2="21" y2="6"></line>
+                    <path d="M16 10a4 4 0 0 1-8 0"></path>
+                </svg>
+                <span id="cart-badge" class="cart-badge">0</span>
+            </a>
+
+            <!-- HAMBURGER BUTTON (3 BARS) -->
+            <button id="menuToggleBtn" class="menu-toggle-btn" aria-label="Toggle Menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+        </div>
+
+    </header>
+
+    <!-- SLIDE-IN SIDEBAR NAVIGATION -->
+    <div id="sideNavOverlay" class="sidenav-overlay"></div>
+    <aside id="sideNavDrawer" class="sidenav-drawer">
+        <div class="sidenav-header">
+            <span class="sidenav-title">NAVIGATION</span>
+            <button id="closeSideNav" class="sidenav-close">&times;</button>
+        </div>
+
+        <div class="sidenav-links">
+            <a href="case-index.html" class="sidenav-link">CASES</a>
+            <a href="imagination.html" class="sidenav-link mobile-only">IMAGINATION S.</a>
+            <a href="impact.html" class="sidenav-link mobile-only">IMPACT S.</a>
+
+            <div class="sidenav-divider"></div>
+
+            <!-- ANONYMOUS USER OPTIONS -->
+            <a href="login.html" id="sideSignInLink" class="sidenav-link">SIGN IN / REGISTER</a>
+
+            <!-- LOGGED IN USER OPTIONS -->
+            <a href="account.html" id="sideAccountLink" class="sidenav-link" hidden>ACCOUNT</a>
+            <a href="orders.html" id="sideOrdersLink" class="sidenav-link" hidden>MY ORDERS</a>
+            <button id="sideLogoutBtn" class="sidenav-link logout-btn" hidden onclick="logoutUser()">LOG OUT</button>
+        </div>
+    </aside>
+
+    <!-- HERO SECTION -->
+    <main class="hero">
+        <div class="hero-content">
+            
+            <h1>IDEAS BECOME STORIES.<br></h1>
+            <p class="hero-description">Every story leaves something behind.</p>
+          <!-- تغيير الرابط ليفتح صفحة الفهرس -->
+<a href="case-index.html" class="discover-button">ENTER CASES FILE</a>
+        </div>
+    </main>
+
+    <!-- BOTTOM BAR -->
+    <div class="home-bottom">
+        <span>THE RENEWAL SERIES</span>
+        <span>01 / 04</span>
+    </div>
+
+    <!-- الـ NOTE بكود ZELL10 بيتحقن أوتوماتيك من script.js في كل الصفحات -->
+
+    <script src="script.js"></script>
+
+</body>
+</html>

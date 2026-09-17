@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<!-- GLOBAL HEADER -->
+<header class="page-header">
+    <a href="test.html" class="brand-link">
+        <img src="images/drawing.svg" alt="ZELL">
+    </a>
+
+    <div class="header-right">
+    <a href="checkout.html" class="cart-icon-link" aria-label="View Shopping Cart">
+        <!-- أيقونة حقيبة التسوق الموحدة SVG -->
+        <svg class="cart-svg" xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <path d="M16 10a4 4 0 0 1-8 0"></path>
+        </svg>
+        <span id="cart-badge" class="cart-badge">0</span>
+    </a>
+    
+    <button id="menuToggleBtn" class="menu-toggle-btn" aria-label="Open Menu">
+        <span></span>
+        <span></span>
+        <span></span>
+    </button>
+</div>
+</header>
+
+<!-- SIDENAV DRAWER & OVERLAY -->
+<div id="sideNavOverlay" class="sidenav-overlay"></div>
+<aside id="sideNavDrawer" class="sidenav-drawer">
+    <button id="closeSideNav" class="close-sidenav">&times;</button>
+    <nav class="sidenav-menu">
+        <a href="test.html">HOME / ARCHIVE</a>
+        <a href="case.html">CASE 017</a>
+        <a href="cart.html">CART</a>
+        <a href="login.html" id="sideSignInLink">SIGN IN</a>
+        <a href="account.html" id="sideAccountLink" hidden>ACCOUNT</a>
+        <button id="sideLogoutBtn" onclick="logoutUser()" hidden style="background:none; border:none; color:#ff5555; cursor:pointer; text-align:left; padding:0; font:inherit;">LOG OUT</button>
+    </nav>
+</aside>
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>UNKNOWN MESSAGE | ZELL</title>
+
+    <link rel="preconnect"
+          href="https://fonts.googleapis.com">
+
+    <link rel="preconnect"
+          href="https://fonts.gstatic.com"
+          crossorigin>
+
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap"
+          rel="stylesheet">
+
+    <link rel="stylesheet"
+          href="style.css">
+
+</head>
+
+
+<body class="message-page">
+
+    <div class="noise"></div>
+
+
+
+    <!-- MESSAGE -->
+
+    <main class="message-container">
+
+
+        <div class="message-top">
+
+            <p class="eyebrow">
+                UNKNOWN SENDER
+            </p>
+
+            <h1>
+                YOU MISSED<br>
+                SOMETHING.
+            </h1>
+
+        </div>
+
+
+        <section class="message-box">
+
+
+            <div class="message-meta">
+
+                <div>
+                    <span>FROM</span>
+                    <strong>UNKNOWN@—</strong>
+                </div>
+
+                <div>
+                    <span>TO</span>
+                    <strong>INVESTIGATOR</strong>
+                </div>
+
+                <div>
+                    <span>SUBJECT</span>
+                    <strong>YOU MISSED SOMETHING</strong>
+                </div>
+
+                <div>
+                    <span>TIME</span>
+                    <strong>01:47 AM</strong>
+                </div>
+
+            </div>
+
+
+            <div class="message-content">
+
+                <p>
+                    You searched the place.
+                </p>
+
+                <p>
+                    You searched the time.
+                </p>
+
+
+                <br>
+
+
+                <p>
+                    But you never searched
+                    for what was left behind.
+                </p>
+
+
+                <br>
+
+
+                <p>
+                    Nothing happens without an impact.
+                </p>
+
+
+                <p>
+                    I left the first one
+                    where you weren't looking.
+                </p>
+
+
+                <div class="message-signature">
+                    — Z
+                </div>
+
+            </div>
+
+
+            <!-- ATTACHMENT -->
+
+            <div class="message-attachment">
+
+                <div>
+
+                    <span>
+                        ATTACHMENT
+                    </span>
+
+                    <strong>
+                        ZELL_ARCHIVE_01
+                    </strong>
+
+                </div>
+
+
+                <a
+                    href="imagination.html"
+                    class="archive-button"
+                >
+                    OPEN ARCHIVE
+                </a>
+
+            </div>
+
+
+        </section>
+
+
+        <a
+            href="case.html"
+            class="return-message"
+        >
+            ← RETURN TO CASE
+        </a>
+
+
+    </main>
+
+
+    <footer class="minimal-footer">
+
+        <span>
+            ZELL — CASE 017
+        </span>
+
+        <span>
+            MESSAGE / CLASSIFIED
+        </span>
+
+    </footer>
+
+
+    <script src="script.js"></script>
+
+</body>
+
+</html>
