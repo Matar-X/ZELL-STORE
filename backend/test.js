@@ -37,7 +37,11 @@ app.get("/:page", (req, res, next) => {
 let db = null;
 try {
     const Database = require("better-sqlite3");
-    db = new Database("zell.db");
+    const fs = require('fs');
+    // تحديد مسار آمن للقاعدة سواء محلياً أو على Vercel
+    const dbPath = process.env.VERCEL ? "/tmp/zell.db" : "zell.db";
+
+    db = new Database(dbPath);
 
     // إضافة أعمدة تلقائياً لجدول users في حال عدم وجودها
     try { db.prepare("ALTER TABLE users ADD COLUMN role TEXT DEFAULT 'user'").run(); } catch (err) {}
@@ -58,7 +62,8 @@ try {
             email TEXT NOT NULL UNIQUE,
             password TEXT NOT NULL,
             role TEXT DEFAULT 'user',
-            birthdate TEXT
+            birthdate TEXT,
+            birthday_coupon_year INTEGER
         )
     `).run();
 
@@ -92,6 +97,10 @@ try {
             total_amount REAL NOT NULL,
             status TEXT DEFAULT 'pending',
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            governorate TEXT,
+            shipping_cost REAL DEFAULT 0,
+            delivery_estimate TEXT,
+            coupon_code TEXT,
             FOREIGN KEY (user_id) REFERENCES users(id)
         )
     `).run();
