@@ -1,18 +1,18 @@
 {
   "version": 2,
-  "builds": [
-    {
-      "src": "backend/test.js",
-      "use": "@vercel/node"
-    }
-  ],
+  "public": true,
   "routes": [
     {
-      "handle": "filesystem"
+      "src": "/(.*\\.(css|js|png|jpg|jpeg|svg|ico|html))",
+      "dest": "/$1"
+    },
+    {
+      "src": "/api/(.*)",
+      "destination": "/backend/test.js"
     },
     {
       "src": "/(.*)",
-      "dest": "backend/test.js"
+      "destination": "/backend/test.js"
     }
   ]
 }
