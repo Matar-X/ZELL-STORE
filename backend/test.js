@@ -829,3 +829,13 @@ app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
     checkAndSendBirthdayEmails(); // Runs on server start
 });
+
+const path = require('path');
+
+// إتاحة كافة ملفات الـ HTML/CSS/JS الثابتة
+app.use(express.static(path.join(__dirname, '.')));
+
+// توجيه الصفحة الرئيسية مباشرة إلى login.html أو index.html
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'login.html'));
+});
