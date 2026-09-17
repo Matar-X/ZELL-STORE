@@ -369,7 +369,6 @@ app.get("/products", (req, res) => {
     res.json(products);
 });
 
-// إضافة Endpoint لجلب منتج منفرد حسب الـ ID لمشكلة الـ 404
 app.get("/products/:id", (req, res) => {
     if (!db) return res.status(500).json({ message: "Database unavailable." });
     const product = db.prepare("SELECT * FROM products WHERE id = ?").get(req.params.id);
@@ -459,7 +458,6 @@ app.get("/me", authenticateToken, (req, res) => {
     });
 });
 
-// إضافة مسار تحديث البروفايل لتفعيل حفظ التعديلات وحل مشكلة الـ PATCH
 app.patch("/profile", authenticateToken, async (req, res) => {
     if (!db) return res.status(500).json({ message: "Database unavailable." });
     const { name, birthdate } = req.body;
@@ -470,7 +468,6 @@ app.patch("/profile", authenticateToken, async (req, res) => {
         if (!currentUser) return res.status(404).json({ message: "User not found." });
 
         const newName = name ? String(name).trim() : currentUser.name;
-        // لا يمكن تغيير تاريخ الميلاد إذا تم تسجيله من قبل بناءً على منطق الواجهة
         const newBirthdate = (!currentUser.birthdate && birthdate) ? String(birthdate).trim() : currentUser.birthdate;
 
         db.prepare("UPDATE users SET name = ?, birthdate = ? WHERE id = ?").run(newName, newBirthdate, userId);
@@ -550,6 +547,17 @@ app.post("/checkout", async (req, res) => {
         const orderId = createOrderTransaction();
         const publicOrderCode = "ZLL-" + crypto.randomBytes(3).toString("hex").toUpperCase();
 
+        // إرسال الإيميلات فوراً والانتظار حتى تتم عملية الإرسال بنجاح
+        try {
+            await sendOrderEmail({
+                orderId, publicOrderCode, totalAmount, customerName, phone, address,
+                userEmail: cleanEmail, items: orderItemsToInsert, subtotalAmount, discountAmount,
+                couponCode: appliedCouponCode, shipping
+            });
+        } catch (emailErr) {
+            console.error("EMAIL ERROR:", emailErr.message);
+        }
+
         res.status(201).json({
             message: "Order placed successfully.",
             orderCode: publicOrderCode,
@@ -558,18 +566,6 @@ app.post("/checkout", async (req, res) => {
             discountAmount,
             shipping: { governorate: shipping.governorate, zoneLabel: shipping.zoneLabel, cost: shipping.cost, deliveryEstimate: shipping.deliveryEstimate }
         });
-
-        setTimeout(async () => {
-            try {
-                await sendOrderEmail({
-                    orderId, publicOrderCode, totalAmount, customerName, phone, address,
-                    userEmail: cleanEmail, items: orderItemsToInsert, subtotalAmount, discountAmount,
-                    couponCode: appliedCouponCode, shipping
-                });
-            } catch (emailErr) {
-                console.error("EMAIL ERROR:", emailErr.message);
-            }
-        }, 10);
 
     } catch (error) {
         console.error("Checkout transaction error:", error);
