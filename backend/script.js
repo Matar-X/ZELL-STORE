@@ -119,17 +119,13 @@ async function loginUser(event) {
     const submitBtn = form.querySelector('button[type="submit"]');
 
     try {
-        const response = await fetch(`${ZELL_API}/login`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                email,
-                password
-            })
-        });
-
+      fetch('/login', {
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ email, password })
+})
         const data = await response.json();
 
         if (!response.ok) {
