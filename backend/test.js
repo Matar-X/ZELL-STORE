@@ -1,26 +1,21 @@
 const express = require("express");
-const crypto = require("crypto");
-const bcrypt = require("bcrypt");
-const cors = require("cors");
-const nodemailer = require("nodemailer");
 const path = require("path");
+const cors = require("cors");
 
-// 1. إنشاء التطبيق أولاً
 const app = express();
 
-// Middlewares
 app.use(cors());
-app.use(express.json({ limit: "1mb" }));
+app.use(express.json());
 
-// 2. خدمة ملفات الواجهة (CSS / HTML / Images)
-app.use(express.static(path.join(__dirname, "..")));
+// 1. خدمة ملفات الواجهة (CSS / HTML / Images) من نفس مجلد الـ backend
+app.use(express.static(__dirname));
 
-// 3. الصفحة الرئيسية
+// 2. الصفحة الرئيسية (توجيه مباشر لـ test.html)
 app.get("/", (req, res) => {
-    res.sendFile(path.join(__dirname, "..", "test.html"));
+    res.sendFile(path.join(__dirname, "test.html"));
 });
 
-// 4. تهيئة SQLite بشكل آمن
+// 3. تهيئة SQLite بشكل آمن (اختياري حالياً)
 let db = null;
 try {
     const Database = require("better-sqlite3");
@@ -29,5 +24,4 @@ try {
     console.log("SQLite skipped on Vercel environment.");
 }
 
-// 5. تصدير التطبيق في آاخر الملف
 module.exports = app;
