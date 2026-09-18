@@ -103,6 +103,119 @@ function updateAccountLinks() {
     if (sideLogoutBtn) sideLogoutBtn.hidden = !savedUser;
 }
 
+let pendingVerificationEmail = sessionStorage.getItem("zellPendingVerifyEmail") || "";
+
+function showVerificationStep(email, note) {
+    pendingVerificationEmail = email;
+    sessionStorage.setItem("zellPendingVerifyEmail", email);
+
+    const verifyForm = document.getElementById("verifyForm");
+    const verifyNote = document.getElementById("verifyEmailNote");
+    const switchAccountBox = document.getElementById("switchAccountBox");
+
+    if (verifyForm) verifyForm.style.display = "block";
+    if (verifyNote) verifyNote.textContent = note || `Enter the 6-digit code we sent to ${email}.`;
+    if (switchAccountBox) switchAccountBox.style.display = "none";
+
+    // اخفاء نموذج التسجيل/الدخول الأساسي لو موجود
+    const registerForm = document.getElementById("registerForm");
+    if (registerForm) registerForm.style.display = "none";
+
+    if (verifyForm) verifyForm.scrollIntoView({ behavior: "smooth", block: "center" });
+}
+
+async function verifyEmailCode(event) {
+    event.preventDefault();
+
+    const codeInput = document.getElementById("verifyCodeInput");
+    const message = document.getElementById("verify-message");
+    const code = codeInput ? codeInput.value.trim() : "";
+
+    if (!pendingVerificationEmail) {
+        if (message) {
+            message.style.color = "#ff4d4d";
+            message.textContent = "Something went wrong. Please try signing up again.";
+        }
+        return;
+    }
+
+    try {
+        const response = await fetch(`${ZELL_API}/verify-email`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email: pendingVerificationEmail, code })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            if (message) {
+                message.style.color = "#ff4d4d";
+                message.textContent = data.message || "Verification failed.";
+            }
+            return;
+        }
+
+        localStorage.setItem("zellSessionToken", data.sessionToken);
+        localStorage.setItem("zellUser", JSON.stringify(data.user));
+        sessionStorage.removeItem("zellPendingVerifyEmail");
+
+        if (message) {
+            message.style.color = "#4dff88";
+            message.textContent = "Email verified! Redirecting...";
+        }
+
+        setTimeout(() => {
+            window.location.href = "test.html";
+        }, 1200);
+
+    } catch (error) {
+        if (message) {
+            message.style.color = "#ff4d4d";
+            message.textContent = "Server connection failed.";
+        }
+        console.error("Verify error:", error);
+    }
+}
+
+async function resendVerificationCode() {
+    const message = document.getElementById("verify-message");
+
+    if (!pendingVerificationEmail) return;
+
+    try {
+        const response = await fetch(`${ZELL_API}/resend-verification`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email: pendingVerificationEmail })
+        });
+
+        const data = await response.json();
+
+        if (message) {
+            message.style.color = response.ok ? "#4dff88" : "#ff4d4d";
+            message.textContent = data.message || (response.ok ? "Code resent." : "Failed to resend code.");
+        }
+    } catch (error) {
+        if (message) {
+            message.style.color = "#ff4d4d";
+            message.textContent = "Server connection failed.";
+        }
+    }
+}
+
+function setupVerificationForm() {
+    const resendBtn = document.getElementById("resendCodeBtn");
+    if (resendBtn) {
+        resendBtn.addEventListener("click", resendVerificationCode);
+    }
+
+    // لو المستخدم رجع للصفحة ولسه معلق تحقق إيميل، نوريه النموذج على طول
+    if (pendingVerificationEmail && document.getElementById("verifyForm")) {
+        showVerificationStep(pendingVerificationEmail);
+    }
+}
+
 async function loginUser(event) {
     event.preventDefault();
 
@@ -128,6 +241,15 @@ async function loginUser(event) {
         const data = await response.json();
 
         if (!response.ok) {
+            if (data.requiresVerification) {
+                if (message) {
+                    message.style.color = "#ffb84d";
+                    message.textContent = data.message || "Please verify your email first.";
+                }
+                showVerificationStep(data.email || email, `Enter the 6-digit code we sent to ${data.email || email}.`);
+                return;
+            }
+
             if (message) {
                 message.style.color = "#ff4d4d";
                 message.textContent = data.message || "LOGIN FAILED.";
@@ -205,14 +327,14 @@ async function registerUser(event) {
 
         if (message) {
             message.style.color = "#4dff88";
-            message.textContent = "ACCOUNT CREATED SUCCESSFULLY.";
+            message.textContent = "ACCOUNT CREATED. CHECK YOUR EMAIL FOR A CODE.";
         }
 
         if (submitBtn) {
             submitBtn.disabled = true;
         }
 
-        window.location.href = "login.html";
+        showVerificationStep(email);
 
     } catch (error) {
         if (message) {
@@ -773,10 +895,33 @@ function setupSizeSelector() {
     const sizeBtns = document.querySelectorAll('.size-btn');
     sizeBtns.forEach(btn => {
         btn.addEventListener('click', () => {
+            if (btn.classList.contains('sold-out') || btn.disabled) return;
+
             sizeBtns.forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
-            globalSelectedSize = btn.innerText.trim();
+            globalSelectedSize = btn.dataset.size || btn.innerText.trim();
         });
+    });
+}
+
+// بيحدّث شكل أزرار المقاسات على حسب المخزون الراجع من السيرفر
+function applyStockToSizeButtons(stock) {
+    const sizeBtns = document.querySelectorAll('.size-btn');
+    globalSelectedSize = '';
+
+    sizeBtns.forEach(btn => {
+        const size = btn.dataset.size || btn.innerText.trim();
+        const qty = stock ? Number(stock[size] || 0) : 1;
+
+        btn.classList.remove('active');
+
+        if (qty <= 0) {
+            btn.classList.add('sold-out');
+            btn.disabled = true;
+        } else {
+            btn.classList.remove('sold-out');
+            btn.disabled = false;
+        }
     });
 }
 
@@ -888,6 +1033,7 @@ async function loadProduct(productId) {
 
         if (productName) productName.textContent = product.name || "";
         if (productCollection) productCollection.textContent = product.collection || "";
+        applyStockToSizeButtons(product.stock);
         if (storyDescription) storyDescription.textContent = product.description || "";
         if (productDescription) productDescription.textContent = product.description || "";
 
@@ -1356,7 +1502,7 @@ async function executeCheckout(e) {
                 ? ` — DELIVERY WITHIN ${data.shipping.deliveryEstimate}`
                 : "";
 
-            orderMessage.innerText = `ORDER PLACED SUCCESSFULLY! CODE: ${data.orderCode}${eta}`;
+            orderMessage.innerText = `ORDER PLACED SUCCESSFULLY! CHECK YOUR EMAIL. CODE: ${data.orderCode}${eta}`;
         }
 
         if (submitBtn) {
@@ -1407,6 +1553,7 @@ document.addEventListener("DOMContentLoaded", function () {
     setupCheckoutPage();
     setupProductFlip();
     setupSizeSelector();
+    setupVerificationForm();
 
     setupGlobalNote();
     setupBirthdayGreeting();

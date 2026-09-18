@@ -104,6 +104,29 @@
                 class="login-message"
             ></p>
 
+            <!-- VERIFICATION STEP (hidden until needed) -->
+            <form id="verifyForm" class="login-box" style="display:none; padding:0; margin-top:10px;" onsubmit="verifyEmailCode(event)">
+
+                <p class="eyebrow" style="margin-top:0;">CHECK YOUR EMAIL</p>
+                <p class="login-description" id="verifyEmailNote">Enter the 6-digit code we sent to your email.</p>
+
+                <div class="input-group">
+                    <label>VERIFICATION CODE</label>
+                    <input type="text" id="verifyCodeInput" inputmode="numeric" maxlength="6" placeholder="000000" required>
+                </div>
+
+                <button type="submit" class="authenticate-button">
+                    VERIFY & CONTINUE
+                </button>
+
+                <button type="button" id="resendCodeBtn" class="switch-button" style="margin-top:10px; width:100%; text-align:center; display:block;">
+                    RESEND CODE
+                </button>
+
+                <p id="verify-message" class="login-message"></p>
+
+            </form>
+
             <a
                 href="test.html"
                 class="return-link"

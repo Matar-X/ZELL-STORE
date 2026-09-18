@@ -1106,6 +1106,69 @@ max-width: 100%;
 }
 
 
+/* ------------------------------
+   SIZE SELECTOR (with stock / sold-out states)
+------------------------------ */
+.size-selector-group {
+    margin-top: 20px;
+}
+
+.size-options {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 8px;
+}
+
+.size-btn {
+    min-width: 52px;
+    height: 44px;
+    padding: 0 14px;
+    background: #1c1c1c;
+    border: 1px solid #333;
+    color: #eee;
+    font-size: 12px;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: 0.25s;
+}
+
+.size-btn:hover:not(.sold-out) {
+    border-color: #777;
+}
+
+.size-btn.active {
+    background: #eee;
+    color: #111;
+    border-color: #eee;
+}
+
+.size-btn.sold-out {
+    color: #555;
+    border-color: #262626;
+    background: repeating-linear-gradient(
+        45deg,
+        #1c1c1c,
+        #1c1c1c 6px,
+        #161616 6px,
+        #161616 12px
+    );
+    cursor: not-allowed;
+    position: relative;
+}
+
+.size-btn.sold-out::after {
+    content: "SOLD OUT";
+    position: absolute;
+    bottom: -16px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 8px;
+    letter-spacing: 1px;
+    color: #ff5555;
+    white-space: nowrap;
+}
+
 .header-link-button {
 
     width: 100%;

@@ -4,7 +4,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CASES FILE | ZELL</title>
+    <title>IMAGINATION SERIES | ZELL</title>
     <link rel="stylesheet" href="style.css">
   <style>
     body {
@@ -25,18 +25,27 @@
         box-sizing: border-box;
     }
 
-    /* العنوان بدون أي إضاءة/توهج ومع خط رفيع */
     .page-title {
         font-family: 'Inter', sans-serif;
         font-size: 2.6rem;
         text-align: center;
         margin-top: 0;
-        margin-bottom: 35px;
+        margin-bottom: 10px;
         text-transform: uppercase;
         letter-spacing: 4px;
         color: #ffffff;
-        font-weight: 500; /* خط رفيع وانسيابي */
-        text-shadow: none;  /* إلغاء التوهج/الإضاءة بالكامل */
+        font-weight: 500;
+        text-shadow: none;
+    }
+
+    .page-subtitle {
+        font-family: 'Inter', sans-serif;
+        text-align: center;
+        color: #888888;
+        font-size: 0.85rem;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        margin-bottom: 35px;
     }
 
     .cases-list {
@@ -85,7 +94,6 @@
         font-weight: 400;
     }
 
-    /* عنوان القضية داخل الخانة بخط أنحف وبدون إضاءة */
     .case-title {
         font-family: 'Inter', sans-serif;
         color: #ffffff;
@@ -143,7 +151,6 @@
 </head>
 <body>
 
-    <!-- الهيدر الموحد القياسي (اللوجو شمال والأيقونات يمين) -->
     <header class="page-header">
         <a href="test.html" class="brand-link">
             <img src="images/drawing.svg" alt="ZELL Logo" class="page-logo">
@@ -165,31 +172,29 @@
         </div>
     </header>
 
-    <!-- المحتوى الرئيسي -->
     <div class="cases-container">
-        <h1 class="page-title">CASES FILE</h1>
+        <h1 class="page-title">IMAGINATION SERIES</h1>
+        <p class="page-subtitle">THE RENEWAL SERIES / 01</p>
 
         <ul class="cases-list">
-            
-            <!-- القضية الأولى: CASE_017 -->
+
             <li class="case-item">
                 <article class="case-card">
                     <div class="case-info">
-                        <span class="case-status">STATUS: OPEN</span>
-                        <h2 class="case-title">CASE_017</h2>
-                        <p class="case-description">Detailed review of evidence and files related to the case investigation.</p>
+                        <span class="case-status">STATUS: AVAILABLE</span>
+                        <h2 class="case-title">SUDDEN ABDUCTION</h2>
+                        <p class="case-description">Some things leave before we notice. The full imagination archive piece.</p>
                     </div>
-                    <a href="case.html" class="open-case-btn">VIEW FILE</a>
+                    <a href="imagination.html" class="open-case-btn">VIEW PIECE</a>
                 </article>
             </li>
 
-            <!-- مستقبلاً: عند إضافة قضية جديدة (مثلاً CASE_018)، انسخ عنصر <li> بالكامل وضعه أسفله هنا مباشرة -->
+            <!-- مستقبلاً: لما تضيف قطعة جديدة في سلسلة IMAGINATION، انسخ عنصر <li> بالكامل وضعه هنا -->
 
         </ul>
     </div>
 
-    <!-- القائمة الجانبية -->
-  <div id="sideNavOverlay" class="sidenav-overlay"></div>
+    <div id="sideNavOverlay" class="sidenav-overlay"></div>
     <aside id="sideNavDrawer" class="sidenav-drawer">
         <div class="sidenav-header">
             <span class="sidenav-title">NAVIGATION</span>
@@ -203,21 +208,16 @@
 
             <div class="sidenav-divider"></div>
 
-            <!-- ANONYMOUS USER OPTIONS -->
             <a href="login.html" id="sideSignInLink" class="sidenav-link">SIGN IN / REGISTER</a>
 
-            <!-- LOGGED IN USER OPTIONS -->
             <a href="account.html" id="sideAccountLink" class="sidenav-link" hidden>ACCOUNT</a>
             <a href="orders.html" id="sideOrdersLink" class="sidenav-link" hidden>MY ORDERS</a>
             <button id="sideLogoutBtn" class="sidenav-link logout-btn" hidden onclick="logoutUser()">LOG OUT</button>
         </div>
     </aside>
 
-        <!-- كود العناصر الداخلية للقائمة الجانبية -->
-    </nav>
-
     <script src="script.js"></script>
-    
+
   <footer class="minimal-footer">
         <span>ZELL — THE RENEWAL SERIES</span>
     </footer>

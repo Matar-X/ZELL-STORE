@@ -47,6 +47,9 @@ try {
     try { db.prepare("ALTER TABLE users ADD COLUMN role TEXT DEFAULT 'user'").run(); } catch (err) {}
     try { db.prepare("ALTER TABLE users ADD COLUMN birthdate TEXT").run(); } catch (err) {}
     try { db.prepare("ALTER TABLE users ADD COLUMN birthday_coupon_year INTEGER").run(); } catch (err) {}
+    try { db.prepare("ALTER TABLE users ADD COLUMN email_verified INTEGER DEFAULT 0").run(); } catch (err) {}
+    try { db.prepare("ALTER TABLE users ADD COLUMN verification_code TEXT").run(); } catch (err) {}
+    try { db.prepare("ALTER TABLE users ADD COLUMN verification_expires TEXT").run(); } catch (err) {}
 
     // أعمدة الشحن في جدول الأوردرات
     try { db.prepare("ALTER TABLE orders ADD COLUMN governorate TEXT").run(); } catch (err) {}
@@ -117,6 +120,25 @@ try {
         )
     `).run();
 
+    // إضافة عمود المقاس لجدول order_items في حال عدم وجوده
+    try { db.prepare("ALTER TABLE order_items ADD COLUMN size TEXT DEFAULT 'M'").run(); } catch (err) {}
+
+    // ==============================
+    // STOCK PER SIZE
+    // ==============================
+    db.prepare(`
+        CREATE TABLE IF NOT EXISTS product_stock (
+            product_id INTEGER NOT NULL,
+            size TEXT NOT NULL,
+            quantity INTEGER NOT NULL DEFAULT 0,
+            PRIMARY KEY (product_id, size),
+            FOREIGN KEY (product_id) REFERENCES products(id)
+        )
+    `).run();
+
+    const AVAILABLE_SIZES = ["M", "L", "XL", "XXL"];
+    const DEFAULT_STOCK_PER_SIZE = 6;
+
     // INITIAL PRODUCTS
     const productCount = db.prepare("SELECT COUNT(*) AS count FROM products").get();
     if (productCount.count === 0) {
@@ -126,6 +148,18 @@ try {
         `);
         insertProduct.run("THE LAST SEAT", 950, "IMAGINATION", "Some things leave before we notice.", "images/sudden-abduction.png");
         insertProduct.run("THE LAST TRACE", 950, "IMPACT", "What happens may disappear. The impact remains.", "images/sudden-abduction-impact.png");
+    }
+
+    // تأكد إن كل منتج له صف مخزون لكل مقاس (6 قطع افتراضيًا لكل مقاس)
+    const allProducts = db.prepare("SELECT id FROM products").all();
+    const insertStockIfMissing = db.prepare(`
+        INSERT OR IGNORE INTO product_stock (product_id, size, quantity)
+        VALUES (?, ?, ?)
+    `);
+    for (const product of allProducts) {
+        for (const size of AVAILABLE_SIZES) {
+            insertStockIfMissing.run(product.id, size, DEFAULT_STOCK_PER_SIZE);
+        }
     }
 } catch (err) {
     console.log("SQLite skipped or error in Vercel environment:", err.message);
@@ -373,7 +407,12 @@ app.get("/products/:id", (req, res) => {
     if (!db) return res.status(500).json({ message: "Database unavailable." });
     const product = db.prepare("SELECT * FROM products WHERE id = ?").get(req.params.id);
     if (!product) return res.status(404).json({ message: "Product not found." });
-    res.json(product);
+
+    const stockRows = db.prepare("SELECT size, quantity FROM product_stock WHERE product_id = ?").all(product.id);
+    const stock = {};
+    stockRows.forEach(row => { stock[row.size] = row.quantity; });
+
+    res.json({ ...product, stock });
 });
 
 app.get("/shipping-zones", (req, res) => {
@@ -390,6 +429,19 @@ app.post("/validate-coupon", (req, res) => {
     res.json(result);
 });
 
+function generateVerificationCode() {
+    return String(crypto.randomInt(100000, 999999));
+}
+
+async function sendVerificationEmail(email, name, code) {
+    await transporter.sendMail({
+        from: '"ZELL Store" <omaralisalama8@gmail.com>',
+        to: email,
+        subject: "Your ZELL verification code",
+        text: `Hi ${name},\n\nYour ZELL verification code is: ${code}\n\nThis code expires in 15 minutes. Enter it on the site to activate your account.\n\nIf you didn't request this, you can ignore this email.`
+    });
+}
+
 app.post("/register", async (req, res) => {
     if (!db) return res.status(500).json({ message: "Database unavailable." });
     const { name, email, password, birthdate } = req.body;
@@ -402,15 +454,31 @@ app.post("/register", async (req, res) => {
         return res.status(400).json({ message: "Name, email, and password are required." });
     }
 
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailPattern.test(cleanEmail)) {
+        return res.status(400).json({ message: "Please enter a valid email address." });
+    }
+
     try {
         const hashedPassword = await bcrypt.hash(cleanPassword, 10);
+        const code = generateVerificationCode();
+        const expiresAt = new Date(Date.now() + 15 * 60 * 1000).toISOString();
+
         const result = db.prepare(`
-            INSERT INTO users (name, email, password, birthdate)
-            VALUES (?, ?, ?, ?)
-        `).run(cleanName, cleanEmail, hashedPassword, cleanBirthdate);
+            INSERT INTO users (name, email, password, birthdate, email_verified, verification_code, verification_expires)
+            VALUES (?, ?, ?, ?, 0, ?, ?)
+        `).run(cleanName, cleanEmail, hashedPassword, cleanBirthdate, code, expiresAt);
+
+        try {
+            await sendVerificationEmail(cleanEmail, cleanName, code);
+        } catch (mailErr) {
+            console.error("VERIFICATION EMAIL ERROR:", mailErr.message);
+            return res.status(500).json({ message: "Account created but we couldn't send the verification email. Please try resending it." });
+        }
 
         res.status(201).json({
-            message: "User account created successfully.",
+            message: "Account created. Check your email for a verification code.",
+            requiresVerification: true,
             user: { id: result.lastInsertRowid, name: cleanName, email: cleanEmail }
         });
     } catch (error) {
@@ -419,6 +487,68 @@ app.post("/register", async (req, res) => {
         }
         res.status(500).json({ message: "Internal server error." });
     }
+});
+
+app.post("/verify-email", async (req, res) => {
+    if (!db) return res.status(500).json({ message: "Database unavailable." });
+    const { email, code } = req.body;
+    const cleanEmail = String(email || "").trim().toLowerCase();
+    const cleanCode = String(code || "").trim();
+
+    if (!cleanEmail || !cleanCode) {
+        return res.status(400).json({ message: "Email and verification code are required." });
+    }
+
+    const user = db.prepare("SELECT * FROM users WHERE email = ?").get(cleanEmail);
+    if (!user) return res.status(404).json({ message: "Account not found." });
+
+    if (user.email_verified) {
+        const sessionToken = createSession(user.id);
+        return res.json({ message: "Email already verified.", sessionToken, user: { id: user.id, name: user.name, email: user.email, role: user.role } });
+    }
+
+    if (!user.verification_code || user.verification_code !== cleanCode) {
+        return res.status(400).json({ message: "Incorrect verification code." });
+    }
+
+    if (!user.verification_expires || new Date(user.verification_expires) < new Date()) {
+        return res.status(400).json({ message: "This code has expired. Please request a new one." });
+    }
+
+    db.prepare(`
+        UPDATE users SET email_verified = 1, verification_code = NULL, verification_expires = NULL
+        WHERE id = ?
+    `).run(user.id);
+
+    const sessionToken = createSession(user.id);
+    res.json({
+        message: "Email verified successfully.",
+        sessionToken,
+        user: { id: user.id, name: user.name, email: user.email, role: user.role, birthdate: user.birthdate || null }
+    });
+});
+
+app.post("/resend-verification", async (req, res) => {
+    if (!db) return res.status(500).json({ message: "Database unavailable." });
+    const { email } = req.body;
+    const cleanEmail = String(email || "").trim().toLowerCase();
+
+    const user = db.prepare("SELECT * FROM users WHERE email = ?").get(cleanEmail);
+    if (!user) return res.status(404).json({ message: "Account not found." });
+    if (user.email_verified) return res.status(400).json({ message: "This email is already verified." });
+
+    const code = generateVerificationCode();
+    const expiresAt = new Date(Date.now() + 15 * 60 * 1000).toISOString();
+    db.prepare("UPDATE users SET verification_code = ?, verification_expires = ? WHERE id = ?").run(code, expiresAt, user.id);
+
+    try {
+        await sendVerificationEmail(cleanEmail, user.name, code);
+    } catch (mailErr) {
+        console.error("RESEND VERIFICATION EMAIL ERROR:", mailErr.message);
+        return res.status(500).json({ message: "Failed to send the verification email. Please try again shortly." });
+    }
+
+    res.json({ message: "A new verification code has been sent to your email." });
 });
 
 app.post("/login", async (req, res) => {
@@ -432,6 +562,14 @@ app.post("/login", async (req, res) => {
 
     const isMatch = await bcrypt.compare(cleanPassword, user.password);
     if (!isMatch) return res.status(401).json({ message: "Invalid email or password." });
+
+    if (!user.email_verified) {
+        return res.status(403).json({
+            message: "Please verify your email before signing in.",
+            requiresVerification: true,
+            email: user.email
+        });
+    }
 
     const sessionToken = createSession(user.id);
     res.json({
@@ -526,6 +664,20 @@ app.post("/checkout", async (req, res) => {
 
         const totalAmount = subtotalAmount - discountAmount + shipping.cost;
 
+        // التحقق من توفر المخزون لكل قطعة قبل تنفيذ الأوردر
+        for (const item of orderItemsToInsert) {
+            const stockRow = db.prepare(
+                "SELECT quantity FROM product_stock WHERE product_id = ? AND size = ?"
+            ).get(item.productId, item.size);
+
+            const availableQty = stockRow ? stockRow.quantity : 0;
+            if (availableQty < item.quantity) {
+                return res.status(409).json({
+                    message: `Sorry, "${item.name}" in size ${item.size} is sold out or has less stock than requested.`
+                });
+            }
+        }
+
         const createOrderTransaction = db.transaction(() => {
             const orderResult = db.prepare(`
                 INSERT INTO orders (user_id, customer_name, phone, address, total_amount, governorate, shipping_cost, delivery_estimate, coupon_code)
@@ -533,9 +685,17 @@ app.post("/checkout", async (req, res) => {
             `).run(userId, String(customerName).trim(), String(phone).trim(), String(address).trim(), totalAmount, shipping.governorate, shipping.cost, shipping.deliveryEstimate, appliedCouponCode);
 
             const orderId = orderResult.lastInsertRowid;
-            const insertItem = db.prepare(`INSERT INTO order_items (order_id, product_id, quantity, price) VALUES (?, ?, ?, ?)`);
+            const insertItem = db.prepare(`INSERT INTO order_items (order_id, product_id, quantity, price, size) VALUES (?, ?, ?, ?, ?)`);
+            const decrementStock = db.prepare(`UPDATE product_stock SET quantity = quantity - ? WHERE product_id = ? AND size = ? AND quantity >= ?`);
+
             for (const item of orderItemsToInsert) {
-                insertItem.run(orderId, item.productId, item.quantity, item.price);
+                insertItem.run(orderId, item.productId, item.quantity, item.price, item.size);
+
+                const stockUpdateResult = decrementStock.run(item.quantity, item.productId, item.size, item.quantity);
+                if (stockUpdateResult.changes === 0) {
+                    // مخزون غير كافي (تم شراؤه من طلب آخر في نفس اللحظة) — نلغي كل العملية
+                    throw new Error(`INSUFFICIENT_STOCK:${item.name}:${item.size}`);
+                }
             }
 
             if (appliedCouponCode === "BDAY15" && userId) {
@@ -544,7 +704,19 @@ app.post("/checkout", async (req, res) => {
             return orderId;
         });
 
-        const orderId = createOrderTransaction();
+        let orderId;
+        try {
+            orderId = createOrderTransaction();
+        } catch (stockError) {
+            if (String(stockError.message).startsWith("INSUFFICIENT_STOCK:")) {
+                const [, itemName, itemSize] = stockError.message.split(":");
+                return res.status(409).json({
+                    message: `Sorry, "${itemName}" in size ${itemSize} just sold out. Please update your cart.`
+                });
+            }
+            throw stockError;
+        }
+
         const publicOrderCode = "ZLL-" + crypto.randomBytes(3).toString("hex").toUpperCase();
 
         // إرسال الإيميلات فوراً والانتظار حتى تتم عملية الإرسال بنجاح

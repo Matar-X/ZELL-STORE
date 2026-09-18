@@ -39,7 +39,7 @@
             Create your ZELL archive.
         </p>
 
-        <form onsubmit="registerUser(event)">
+        <form id="registerForm" onsubmit="registerUser(event)">
 
             <div class="input-group">
                 <label>NAME</label>
@@ -51,7 +51,7 @@
                 <input type="email" placeholder="your@email.com" required>
             </div>
 
-            <div class="input-group">
+            <div class="input-group birthdate-group">
                 <label>BIRTHDATE</label>
                 <input type="date" id="registerBirthdate">
             </div>
@@ -69,7 +69,30 @@
 
         <p id="register-message" class="login-message"></p>
 
-      <div class="switch-account">
+        <!-- VERIFICATION STEP (hidden until an account is created) -->
+        <form id="verifyForm" class="login-box" style="display:none; padding:0; margin-top:10px;" onsubmit="verifyEmailCode(event)">
+
+            <p class="eyebrow" style="margin-top:0;">CHECK YOUR EMAIL</p>
+            <p class="login-description" id="verifyEmailNote">Enter the 6-digit code we sent to your email.</p>
+
+            <div class="input-group">
+                <label>VERIFICATION CODE</label>
+                <input type="text" id="verifyCodeInput" inputmode="numeric" maxlength="6" placeholder="000000" required>
+            </div>
+
+            <button type="submit" class="authenticate-button">
+                VERIFY & CONTINUE
+            </button>
+
+            <button type="button" id="resendCodeBtn" class="switch-button" style="margin-top:10px; width:100%; text-align:center; display:block;">
+                RESEND CODE
+            </button>
+
+            <p id="verify-message" class="login-message"></p>
+
+        </form>
+
+      <div class="switch-account" id="switchAccountBox">
         <p>ALREADY HAVE AN ACCOUNT?</p>
         <a href="login.html" class="switch-button">LOGIN</a>
     </div>
