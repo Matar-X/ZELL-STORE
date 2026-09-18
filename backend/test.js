@@ -39,7 +39,7 @@ try {
     const Database = require("better-sqlite3");
     const fs = require('fs');
     // تحديد مسار آمن للقاعدة سواء محلياً أو على Vercel
-    const dbPath = process.env.VERCEL ? "/tmp/zell.db" : "zell.db";
+  const dbPath = "zell.db";
 
     db = new Database(dbPath);
 
