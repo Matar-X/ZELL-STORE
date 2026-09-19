@@ -218,13 +218,23 @@ function isBirthdayToday(birthdate) {
 // ==============================
 // NODEMAILER CONFIGURATION
 // ==============================
+// ==============================
+// NODEMAILER CONFIGURATION
+// ==============================
 const transporter = nodemailer.createTransport({
-    host: "smtp.gmail.com",
-    port: 465,
-    secure: true,
+    service: "gmail",
     auth: {
-        user: "omaralisalama8@gmail.com",
-        pass: "wbai ipbb nzan efuf"
+        user: process.env.EMAIL_USER || "omaralisalama8@gmail.com",
+        pass: process.env.EMAIL_PASS || "iztd lxzl ogvg sydn" 
+    }
+});
+
+// اختبار الاتصال عند تشغيل السيرفر
+transporter.verify((error, success) => {
+    if (error) {
+        console.error("❌ Email Transporter Connection Failed:", error.message);
+    } else {
+        console.log("✅ Email Transporter is ready to send messages");
     }
 });
 
