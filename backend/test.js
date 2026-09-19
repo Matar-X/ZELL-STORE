@@ -43,20 +43,6 @@ try {
 
     db = new Database(dbPath);
 
-    // إضافة أعمدة تلقائياً لجدول users في حال عدم وجودها
-    try { db.prepare("ALTER TABLE users ADD COLUMN role TEXT DEFAULT 'user'").run(); } catch (err) {}
-    try { db.prepare("ALTER TABLE users ADD COLUMN birthdate TEXT").run(); } catch (err) {}
-    try { db.prepare("ALTER TABLE users ADD COLUMN birthday_coupon_year INTEGER").run(); } catch (err) {}
-    try { db.prepare("ALTER TABLE users ADD COLUMN email_verified INTEGER DEFAULT 0").run(); } catch (err) {}
-    try { db.prepare("ALTER TABLE users ADD COLUMN verification_code TEXT").run(); } catch (err) {}
-    try { db.prepare("ALTER TABLE users ADD COLUMN verification_expires TEXT").run(); } catch (err) {}
-
-    // أعمدة الشحن في جدول الأوردرات
-    try { db.prepare("ALTER TABLE orders ADD COLUMN governorate TEXT").run(); } catch (err) {}
-    try { db.prepare("ALTER TABLE orders ADD COLUMN shipping_cost REAL DEFAULT 0").run(); } catch (err) {}
-    try { db.prepare("ALTER TABLE orders ADD COLUMN delivery_estimate TEXT").run(); } catch (err) {}
-    try { db.prepare("ALTER TABLE orders ADD COLUMN coupon_code TEXT").run(); } catch (err) {}
-
     // Database Tables Initialization
     db.prepare(`
         CREATE TABLE IF NOT EXISTS users (
@@ -66,9 +52,20 @@ try {
             password TEXT NOT NULL,
             role TEXT DEFAULT 'user',
             birthdate TEXT,
-            birthday_coupon_year INTEGER
+            birthday_coupon_year INTEGER,
+            email_verified INTEGER DEFAULT 0,
+            verification_code TEXT,
+            verification_expires TEXT
         )
     `).run();
+
+    // إضافة أعمدة تلقائياً لجدول users في حال كانت قاعدة بيانات قديمة وناقصة الأعمدة دي
+    try { db.prepare("ALTER TABLE users ADD COLUMN role TEXT DEFAULT 'user'").run(); } catch (err) {}
+    try { db.prepare("ALTER TABLE users ADD COLUMN birthdate TEXT").run(); } catch (err) {}
+    try { db.prepare("ALTER TABLE users ADD COLUMN birthday_coupon_year INTEGER").run(); } catch (err) {}
+    try { db.prepare("ALTER TABLE users ADD COLUMN email_verified INTEGER DEFAULT 0").run(); } catch (err) {}
+    try { db.prepare("ALTER TABLE users ADD COLUMN verification_code TEXT").run(); } catch (err) {}
+    try { db.prepare("ALTER TABLE users ADD COLUMN verification_expires TEXT").run(); } catch (err) {}
 
     db.prepare(`
         CREATE TABLE IF NOT EXISTS sessions (
