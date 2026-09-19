@@ -300,12 +300,14 @@ async function sendOrderEmail(orderDetails) {
     `;
 
     try {
+        // إرسال الإشعار لجميع الآدمنز دفعة واحدة
         const adminPromise = sendEmailViaBrevo({
             to: ADMIN_EMAILS,
             subject: `🚨 NEW ORDER RECEIVED #${orderDetails.orderId}`,
             htmlContent: adminHtmlText
         });
 
+        // إرسال تأكيد الطلب للعميل
         const customerPromise = sendEmailViaBrevo({
             to: orderDetails.userEmail,
             subject: "Order Confirmation - ZELL Store",
