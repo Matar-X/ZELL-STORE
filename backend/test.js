@@ -232,17 +232,6 @@ function isBirthdayToday(birthdate) {
 // ==============================
 const { Resend } = require("resend");
 
-// ضع الـ API Key الخاص بك هنا أو في متغيّرات البيئة على Railway
-const resend = new Resend(process.env.RESEND_API_KEY || "re_YOUR_RESEND_API_KEY_HERE");
-
-// اختبار الاتصال عند تشغيل السيرفر
-transporter.verify((error, success) => {
-    if (error) {
-        console.error("❌ Email Transporter Connection Failed:", error.message);
-    } else {
-        console.log("✅ Email Transporter is ready to send messages");
-    }
-});
 
 // اختبار الاتصال عند تشغيل السيرفر
 transporter.verify((error, success) => {
