@@ -227,19 +227,13 @@ function isBirthdayToday(birthdate) {
 // ==============================
 // NODEMAILER CONFIGURATION (Railway IPv4 Fix)
 // ==============================
-const transporter = nodemailer.createTransport({
-    host: "smtp.gmail.com",
-    port: 587,
-    secure: false, // استخدام STARTTLS على البورت 587
-    auth: {
-        user: process.env.EMAIL_USER || "omaralisalama8@gmail.com",
-        pass: process.env.EMAIL_PASS || "iztd lxzl ogvg sydn" 
-    },
-    family: 4, // ⚠️ إجبار الاتصال بـ IPv4 وتجاهل IPv6 لتفادي خطأ ENETUNREACH
-    tls: {
-        rejectUnauthorized: false
-    }
-});
+// ==============================
+// RESEND EMAIL CONFIGURATION
+// ==============================
+const { Resend } = require("resend");
+
+// ضع الـ API Key الخاص بك هنا أو في متغيّرات البيئة على Railway
+const resend = new Resend(process.env.RESEND_API_KEY || "re_YOUR_RESEND_API_KEY_HERE");
 
 // اختبار الاتصال عند تشغيل السيرفر
 transporter.verify((error, success) => {
@@ -276,92 +270,82 @@ const ADMIN_EMAILS = [
 
 async function sendOrderEmail(orderDetails) {
     if (!orderDetails || !orderDetails.items) return;
+
+    // 1. تجهيز قائمة المنتجات
     const itemsList = orderDetails.items
-        .map(item => `- ${item.name} | SIZE: ${item.size || 'M'} (x${item.quantity}) - ${item.price} EGP`)
-        .join("\n");
+        .map(item => `<li><strong>${item.name}</strong> | SIZE: ${item.size || 'M'} (x${item.quantity}) - ${item.price} EGP</li>`)
+        .join("");
 
     const shipping = orderDetails.shipping || {};
-    const costBreakdown = [
-        `Subtotal: ${Number(orderDetails.subtotalAmount || 0).toFixed(2)} EGP`,
-        orderDetails.discountAmount ? `Discount (${orderDetails.couponCode}): -${Number(orderDetails.discountAmount).toFixed(2)} EGP` : null,
-        `Shipping (${shipping.governorate || "-"}): ${Number(shipping.cost || 0).toFixed(2)} EGP`,
-        `Total: ${Number(orderDetails.totalAmount || 0).toFixed(2)} EGP`
-    ].filter(Boolean).join("\n");
+    const costBreakdown = `
+        <p><strong>Subtotal:</strong> ${Number(orderDetails.subtotalAmount || 0).toFixed(2)} EGP</p>
+        ${orderDetails.discountAmount ? `<p><strong>Discount (${orderDetails.couponCode}):</strong> -${Number(orderDetails.discountAmount).toFixed(2)} EGP</p>` : ""}
+        <p><strong>Shipping (${shipping.governorate || "-"}):</strong> ${Number(shipping.cost || 0).toFixed(2)} EGP</p>
+        <h3><strong>Total:</strong> ${Number(orderDetails.totalAmount || 0).toFixed(2)} EGP</h3>
+    `;
 
-    const deliveryBlock = `
-DELIVERY:
---------------------
-Governorate: ${shipping.governorate || "-"}
-Zone: ${shipping.zoneLabel || "-"}
-Estimated delivery: ${shipping.deliveryEstimate || "-"}`;
+    // 2. تصميم رسالة الأدمن (فيها الآيدي وتفاصيل العميل والطلب)
+    const adminHtmlText = `
+        <h2>🚨 NEW ORDER RECEIVED (ADMIN NOTIFICATION)</h2>
+        <p><strong>Database Order ID:</strong> #${orderDetails.orderId}</p>
+        <p><strong>Public Order Code:</strong> ${orderDetails.publicOrderCode}</p>
+        <p><strong>Date:</strong> ${new Date().toLocaleString()}</p>
+        <hr>
+        <h3>CUSTOMER INFORMATION</h3>
+        <p><strong>Name:</strong> ${orderDetails.customerName}</p>
+        <p><strong>Phone:</strong> ${orderDetails.phone}</p>
+        <p><strong>Address:</strong> ${orderDetails.address}</p>
+        <p><strong>User Email:</strong> ${orderDetails.userEmail}</p>
+        <p><strong>Governorate:</strong> ${shipping.governorate || "-"}</p>
+        <p><strong>Estimated Delivery:</strong> ${shipping.deliveryEstimate || "-"}</p>
+        <hr>
+        <h3>ORDERED ITEMS</h3>
+        <ul>${itemsList}</ul>
+        <hr>
+        <h3>COST BREAKDOWN</h3>
+        ${costBreakdown}
+    `;
 
-    const adminEmailText = `
-=========================================
-NEW ORDER RECEIVED (ADMIN NOTIFICATION)
-=========================================
-Database Order ID: #${orderDetails.orderId}
-Public Order Code: ${orderDetails.publicOrderCode}
-Date: ${new Date().toLocaleString()}
+    // 3. تصميم رسالة العميل (تأكيد الطلب)
+    const customerHtmlText = `
+        <h2>ORDER CONFIRMATION - ZELL STORE</h2>
+        <p>Hi ${orderDetails.customerName}, thank you for your order!</p>
+        <p><strong>Order Code:</strong> ${orderDetails.publicOrderCode}</p>
+        <p><strong>Estimated Delivery:</strong> ${shipping.deliveryEstimate || "-"}</p>
+        <hr>
+        <h3>ORDERED ITEMS</h3>
+        <ul>${itemsList}</ul>
+        <hr>
+        <h3>COST BREAKDOWN</h3>
+        ${costBreakdown}
+        <hr>
+        <p>We are preparing your order now!</p>
+    `;
 
-CUSTOMER INFORMATION:
---------------------
-Name: ${orderDetails.customerName}
-Phone: ${orderDetails.phone}
-Address: ${orderDetails.address}
-User Email: ${orderDetails.userEmail}
-${deliveryBlock}
+    try {
+        // 📧 الرسالة الأولى: بتتبعت للـ 3 أدمنز مع بعض في نفس الوقت
+        const adminPromise = resend.emails.send({
+            from: "ZELL Store <onboarding@resend.dev>",
+            to: ADMIN_EMAILS, // مصفوفة الـ 3 إيميلات بتوع الأدمن
+            subject: `🚨 NEW ORDER RECEIVED #${orderDetails.orderId}`,
+            html: adminHtmlText
+        });
 
-ORDERED ITEMS:
--------------
-${itemsList}
+        // 📧 الرسالة الثانية: بتتبعت لإيميل العميل (Customer) فقط
+        const customerPromise = resend.emails.send({
+            from: "ZELL Store <onboarding@resend.dev>",
+            to: orderDetails.userEmail, // إيميل العميل
+            subject: "Order Confirmation - ZELL Store",
+            html: customerHtmlText
+        });
 
-COST BREAKDOWN:
--------------
-${costBreakdown}
-=========================================`;
+        // تشغيل الإرسال للإثنين في نفس الوقت
+        await Promise.all([adminPromise, customerPromise]);
+        console.log(`✅ Order emails sent successfully to Admins & Customer for order #${orderDetails.orderId}`);
 
-    const customerEmailText = `
-=========================================
-ORDER CONFIRMATION - ZELL STORE
-=========================================
-Date: ${new Date().toLocaleString()}
-
-CUSTOMER INFORMATION:
---------------------
-Name: ${orderDetails.customerName}
-Phone: ${orderDetails.phone}
-Address: ${orderDetails.address}
-Email: ${orderDetails.userEmail}
-${deliveryBlock}
-
-ORDERED ITEMS:
--------------
-${itemsList}
-
-COST BREAKDOWN:
--------------
-${costBreakdown}
-=========================================
-
-Thank you for shopping with ZELL!
-Your order should arrive within ${shipping.deliveryEstimate || "the estimated window"}.`;
-
-    // إرسال إيميل واحد لجميع المسؤولين دفعة واحدة
-    const adminPromise = transporter.sendMail({
-        from: '"ZELL Store" <omaralisalama8@gmail.com>',
-        to: ADMIN_EMAILS.join(", "),
-        subject: `🚨 NEW ORDER RECEIVED #${orderDetails.orderId}`,
-        text: adminEmailText
-    }).catch(e => console.error(`Failed sending to admins:`, e.message));
-
-    const customerPromise = transporter.sendMail({
-        from: '"ZELL Store" <omaralisalama8@gmail.com>',
-        to: orderDetails.userEmail,
-        subject: `Order Confirmation - ZELL Store`,
-        text: customerEmailText
-    }).catch(e => console.error(`Failed sending customer email to ${orderDetails.userEmail}:`, e.message));
-
-    await Promise.all([adminPromise, customerPromise]);
+    } catch (error) {
+        console.error("❌ Resend Order Email Error:", error.message);
+    }
 }
 
 // HELPER FUNCTIONS & AUTH MIDDLEWARE
@@ -470,12 +454,26 @@ function generateVerificationCode() {
 }
 
 async function sendVerificationEmail(email, name, code) {
-    await transporter.sendMail({
-        from: '"ZELL Store" <omaralisalama8@gmail.com>',
-        to: email,
-        subject: "Your ZELL verification code",
-        text: `Hi ${name},\n\nYour ZELL verification code is: ${code}\n\nThis code expires in 15 minutes. Enter it on the site to activate your account.\n\nIf you didn't request this, you can ignore this email.`
-    });
+    try {
+        await resend.emails.send({
+            from: "ZELL Store <onboarding@resend.dev>",
+            to: email,
+            subject: "Your ZELL verification code",
+            html: `
+                <div style="font-family: sans-serif; padding: 20px; color: #333;">
+                    <h2>Hi ${name},</h2>
+                    <p>Your ZELL verification code is:</p>
+                    <h1 style="background: #f4f4f4; display: inline-block; padding: 10px 20px; letter-spacing: 4px;">${code}</h1>
+                    <p>This code expires in 15 minutes. Enter it on the site to activate your account.</p>
+                    <p>If you didn't request this, you can ignore this email.</p>
+                </div>
+            `
+        });
+        console.log(`✅ Verification email sent to ${email}`);
+    } catch (error) {
+        console.error("❌ Resend Verification Email Error:", error.message);
+        throw error;
+    }
 }
 
 app.post("/register", async (req, res) => {
