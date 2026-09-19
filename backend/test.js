@@ -1,3 +1,5 @@
+const { Resend } = require("resend");
+const resend = new Resend(process.env.re_ZnTxgc1p_9LRPMMJxdcxF69NvWSheZEhq);
 const express = require("express");
 const crypto = require("crypto");
 const bcrypt = require("bcrypt");
