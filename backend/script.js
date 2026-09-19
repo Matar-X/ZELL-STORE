@@ -456,6 +456,17 @@ function setupProfileForm() {
             messageElem.textContent = text;
         }
 
+        // 1. التأكد من وجود توكن تسجيل الدخول
+        const token = localStorage.getItem("zellSessionToken") || localStorage.getItem("sessionToken");
+
+        if (!token) {
+            showMessage("UNAUTHORIZED: INVALID OR EXPIRED SESSION. PLEASE LOGIN AGAIN.", false);
+            setTimeout(() => {
+                window.location.href = "login.html";
+            }, 1500);
+            return;
+        }
+
         const payload = {};
 
         if (nameInput) {
@@ -479,19 +490,29 @@ function setupProfileForm() {
         }
 
         try {
+            // 2. إرسال الطلب مع الـ Authorization Header الصريح
             const response = await fetch(`${ZELL_API}/profile`, {
                 method: "PATCH",
-                headers: authHeaders(),
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
+                },
                 body: JSON.stringify(payload)
             });
 
             const data = await response.json();
 
             if (!response.ok) {
-                showMessage((data.message || "UPDATE FAILED.").toUpperCase(), false);
+                // لو السيرفر رَفَض التوكن لأي سبب
+                if (response.status === 401 || response.status === 403) {
+                    showMessage("UNAUTHORIZED: INVALID OR EXPIRED SESSION.", false);
+                } else {
+                    showMessage((data.message || "UPDATE FAILED.").toUpperCase(), false);
+                }
                 return;
             }
 
+            // تحديث بيانات المستخدم المجهزة محلياً
             const merged = Object.assign({}, getSavedUser(), data.user);
             saveUser(merged);
             fillProfileForm(merged);
