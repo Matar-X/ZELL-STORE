@@ -221,11 +221,28 @@ function isBirthdayToday(birthdate) {
 // ==============================
 // NODEMAILER CONFIGURATION
 // ==============================
+// ==============================
+// NODEMAILER CONFIGURATION
+// ==============================
 const transporter = nodemailer.createTransport({
-    service: "gmail",
+    host: "smtp.gmail.com",
+    port: 465,
+    secure: true, // استخدام SSL لتفادي الـ Block
     auth: {
         user: process.env.EMAIL_USER || "omaralisalama8@gmail.com",
         pass: process.env.EMAIL_PASS || "iztd lxzl ogvg sydn" 
+    },
+    tls: {
+        rejectUnauthorized: false
+    }
+});
+
+// اختبار الاتصال عند تشغيل السيرفر
+transporter.verify((error, success) => {
+    if (error) {
+        console.error("❌ Email Transporter Connection Failed:", error.message);
+    } else {
+        console.log("✅ Email Transporter is ready to send messages");
     }
 });
 
@@ -316,14 +333,13 @@ ${costBreakdown}
 Thank you for shopping with ZELL!
 Your order should arrive within ${shipping.deliveryEstimate || "the estimated window"}.`;
 
-    const adminPromises = ADMIN_EMAILS.map(recipient => 
-        transporter.sendMail({
-            from: '"ZELL Store" <omaralisalama8@gmail.com>',
-            to: recipient,
-            subject: `🚨 NEW ORDER RECEIVED #${orderDetails.orderId}`,
-            text: adminEmailText
-        }).catch(e => console.error(`Failed sending to admin ${recipient}:`, e.message))
-    );
+    // إرسال إيميل واحد لجميع المسؤولين دفعة واحدة
+    const adminPromise = transporter.sendMail({
+        from: '"ZELL Store" <omaralisalama8@gmail.com>',
+        to: ADMIN_EMAILS.join(", "),
+        subject: `🚨 NEW ORDER RECEIVED #${orderDetails.orderId}`,
+        text: adminEmailText
+    }).catch(e => console.error(`Failed sending to admins:`, e.message));
 
     const customerPromise = transporter.sendMail({
         from: '"ZELL Store" <omaralisalama8@gmail.com>',
@@ -332,7 +348,7 @@ Your order should arrive within ${shipping.deliveryEstimate || "the estimated wi
         text: customerEmailText
     }).catch(e => console.error(`Failed sending customer email to ${orderDetails.userEmail}:`, e.message));
 
-    await Promise.all([...adminPromises, customerPromise]);
+    await Promise.all([adminPromise, customerPromise]);
 }
 
 // HELPER FUNCTIONS & AUTH MIDDLEWARE
@@ -732,15 +748,15 @@ app.post("/checkout", async (req, res) => {
             shipping
         };
 
-        // إرسال الإيميلات
-        await sendOrderEmail(orderDetails);
+       // إرسال الإيميلات في الخلفية بدون تعطيل الـ Checkout
+sendOrderEmail(orderDetails).catch(err => console.error("ORDER EMAIL BG ERROR:", err.message));
 
-        res.status(201).json({
-            message: "Order placed successfully.",
-            orderId,
-            orderCode: publicOrderCode,
-            shipping
-        });
+res.status(201).json({
+    message: "Order placed successfully.",
+    orderId,
+    orderCode: publicOrderCode,
+    shipping
+});
 
     } catch (error) {
         console.error("CHECKOUT ERROR:", error);
