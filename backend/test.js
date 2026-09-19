@@ -224,16 +224,29 @@ function isBirthdayToday(birthdate) {
 // ==============================
 // NODEMAILER CONFIGURATION
 // ==============================
+// ==============================
+// NODEMAILER CONFIGURATION (Railway IPv4 Fix)
+// ==============================
 const transporter = nodemailer.createTransport({
     host: "smtp.gmail.com",
-    port: 465,
-    secure: true, // استخدام SSL لتفادي الـ Block
+    port: 587,
+    secure: false, // استخدام STARTTLS على البورت 587
     auth: {
         user: process.env.EMAIL_USER || "omaralisalama8@gmail.com",
         pass: process.env.EMAIL_PASS || "iztd lxzl ogvg sydn" 
     },
+    family: 4, // ⚠️ إجبار الاتصال بـ IPv4 وتجاهل IPv6 لتفادي خطأ ENETUNREACH
     tls: {
         rejectUnauthorized: false
+    }
+});
+
+// اختبار الاتصال عند تشغيل السيرفر
+transporter.verify((error, success) => {
+    if (error) {
+        console.error("❌ Email Transporter Connection Failed:", error.message);
+    } else {
+        console.log("✅ Email Transporter is ready to send messages");
     }
 });
 
