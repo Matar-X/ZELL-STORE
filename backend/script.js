@@ -3,7 +3,7 @@ console.log("ZELL SCRIPT CONNECTED");
 /* ------------------------------
    API BASE
 ------------------------------ */
-const ZELL_API = ""; // اتركها فارغة إذا كان الـ Backend والـ Frontend على نفس الدومين (Vercel)
+const ZELL_API = ""; // اتركها فارغة إذا كان الـ Backend والـ Frontend على نفس الدومين
 
 /* ------------------------------
    CURRENT USER HELPERS
@@ -35,7 +35,6 @@ function authHeaders(extra) {
     return headers;
 }
 
-// بترجع true لو النهاردة عيد ميلاد المستخدم (YYYY-MM-DD)
 function isBirthdayToday(birthdate) {
     if (!birthdate) return false;
 
@@ -117,7 +116,6 @@ function showVerificationStep(email, note) {
     if (verifyNote) verifyNote.textContent = note || `Enter the 6-digit code we sent to ${email}.`;
     if (switchAccountBox) switchAccountBox.style.display = "none";
 
-    // اخفاء نموذج التسجيل/الدخول الأساسي لو موجود
     const registerForm = document.getElementById("registerForm");
     if (registerForm) registerForm.style.display = "none";
 
@@ -210,7 +208,6 @@ function setupVerificationForm() {
         resendBtn.addEventListener("click", resendVerificationCode);
     }
 
-    // لو المستخدم رجع للصفحة ولسه معلق تحقق إيميل، نوريه النموذج على طول
     if (pendingVerificationEmail && document.getElementById("verifyForm")) {
         showVerificationStep(pendingVerificationEmail);
     }
@@ -230,7 +227,7 @@ async function loginUser(event) {
     const submitBtn = form.querySelector('button[type="submit"]');
 
     try {
-        const response = await fetch('/login', {
+        const response = await fetch(`${ZELL_API}/login`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -380,7 +377,6 @@ function setupAccountPage() {
     refreshAccountFromServer();
 }
 
-// بنجيب أحدث بيانات من السيرفر عشان تاريخ الميلاد يبقى مضبوط
 async function refreshAccountFromServer() {
     if (!getSessionToken()) return;
 
@@ -456,8 +452,7 @@ function setupProfileForm() {
             messageElem.textContent = text;
         }
 
-        // 1. التأكد من وجود توكن تسجيل الدخول
-        const token = localStorage.getItem("zellSessionToken") || localStorage.getItem("sessionToken");
+        const token = getSessionToken();
 
         if (!token) {
             showMessage("UNAUTHORIZED: INVALID OR EXPIRED SESSION. PLEASE LOGIN AGAIN.", false);
@@ -490,20 +485,15 @@ function setupProfileForm() {
         }
 
         try {
-            // 2. إرسال الطلب مع الـ Authorization Header الصريح
             const response = await fetch(`${ZELL_API}/profile`, {
                 method: "PATCH",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${token}`
-                },
+                headers: authHeaders(),
                 body: JSON.stringify(payload)
             });
 
             const data = await response.json();
 
             if (!response.ok) {
-                // لو السيرفر رَفَض التوكن لأي سبب
                 if (response.status === 401 || response.status === 403) {
                     showMessage("UNAUTHORIZED: INVALID OR EXPIRED SESSION.", false);
                 } else {
@@ -512,7 +502,6 @@ function setupProfileForm() {
                 return;
             }
 
-            // تحديث بيانات المستخدم المجهزة محلياً
             const merged = Object.assign({}, getSavedUser(), data.user);
             saveUser(merged);
             fillProfileForm(merged);
@@ -721,17 +710,8 @@ function setupProfileImage() {
         return;
     }
 
-    const savedUserText = localStorage.getItem("zellUser");
-
-    if (!savedUserText) return;
-
-    let user;
-
-    try {
-        user = JSON.parse(savedUserText);
-    } catch (error) {
-        return;
-    }
+    const user = getSavedUser();
+    if (!user) return;
 
     const userId = user.id || user.email;
     const imageKey = "zellProfileImage_" + userId;
@@ -925,7 +905,6 @@ function setupSizeSelector() {
     });
 }
 
-// بيحدّث شكل أزرار المقاسات على حسب المخزون الراجع من السيرفر
 function applyStockToSizeButtons(stock) {
     const sizeBtns = document.querySelectorAll('.size-btn');
     globalSelectedSize = '';
@@ -1063,7 +1042,7 @@ async function loadProduct(productId) {
             productImage.alt = product.name || "ZELL PRODUCT";
         }
 
-        updatePriceDisplay();
+        updatePriceDisplay(product);
 
         const addToCartBtns = document.querySelectorAll("#addToCartButton, .add-to-cart-btn, .add-to-cart");
 
@@ -1080,7 +1059,7 @@ async function loadProduct(productId) {
                     return;
                 }
 
-                const token = localStorage.getItem("zellSessionToken") || localStorage.getItem("zellUser");
+                const token = getSessionToken();
                 const finalPrice = token ? 950 : (product.price || 1000);
 
                 addToCart({
@@ -1096,494 +1075,44 @@ async function loadProduct(productId) {
     }
 }
 
-function updatePriceDisplay() {
-    const token = localStorage.getItem("zellSessionToken") || localStorage.getItem("zellUser");
+function updatePriceDisplay(product) {
+    const token = getSessionToken();
     const priceElem = document.getElementById("productPrice");
     const registerNote = document.getElementById("registerNote");
+    const basePrice = product && product.price ? product.price : 1000;
 
     if (priceElem) {
         if (token) {
             priceElem.innerHTML = `
                 <span style="text-decoration: line-through; color: #555; font-size: 0.85em; margin-right: 8px;">
-                    1000 EGP
+                    ${basePrice} EGP
                 </span>
                 <span style="color: #ffffff;">
-                    950 EGP
+                    ${basePrice * 0.95} EGP
                 </span>
             `;
         } else {
-            priceElem.innerHTML = `<span>1000 EGP</span>`;
+            priceElem.innerHTML = `<span>${basePrice} EGP</span>`;
         }
     }
 
     if (registerNote) {
-        registerNote.hidden = Boolean(token);
+        registerNote.style.display = token ? "none" : "block";
     }
-}
-
-/* ------------------------------
-   CHECKOUT / SHIPPING / DISCOUNT LOGIC
------------------------------- */
-let appliedDiscountRate = 0;
-let appliedDiscountLabel = "DISCOUNT";
-let appliedCouponCode = "";
-let selectedShipping = null;
-let shippingZones = [];
-
-async function loadShippingZones() {
-    const select = document.getElementById("customerGovernorate");
-    if (!select) return;
-
-    try {
-        const response = await fetch(`${ZELL_API}/shipping-zones`);
-        const data = await response.json();
-
-        shippingZones = data.zones || [];
-
-        const deltaZones = shippingZones.filter(zone => zone.zone === "delta");
-        const otherZones = shippingZones.filter(zone => zone.zone !== "delta");
-
-        function buildOptions(zones) {
-            return zones
-                .map(zone => `<option value="${zone.governorate}">${zone.governorate.toUpperCase()}</option>`)
-                .join("");
-        }
-
-        select.innerHTML = `
-            <option value="">— SELECT GOVERNORATE —</option>
-            <optgroup label="CAIRO &amp; DELTA — 70 EGP / 3 DAYS">
-                ${buildOptions(deltaZones)}
-            </optgroup>
-            <optgroup label="OTHER GOVERNORATES — 90 EGP / 1 WEEK">
-                ${buildOptions(otherZones)}
-            </optgroup>
-        `;
-
-        select.addEventListener("change", handleGovernorateChange);
-
-        const remembered = localStorage.getItem("zellGovernorate");
-        if (remembered && shippingZones.some(zone => zone.governorate === remembered)) {
-            select.value = remembered;
-        }
-
-        handleGovernorateChange();
-
-    } catch (error) {
-        console.error("Shipping zones error:", error);
-        select.innerHTML = `<option value="">SHIPPING UNAVAILABLE — RETRY LATER</option>`;
-    }
-}
-
-function handleGovernorateChange() {
-    const select = document.getElementById("customerGovernorate");
-    const noteElem = document.getElementById("deliveryNote");
-
-    if (!select) return;
-
-    selectedShipping = shippingZones.find(zone => zone.governorate === select.value) || null;
-
-    if (selectedShipping) {
-        localStorage.setItem("zellGovernorate", selectedShipping.governorate);
-    }
-
-    if (noteElem) {
-        if (selectedShipping) {
-            noteElem.textContent = `${selectedShipping.zoneLabel} — DELIVERY WITHIN ${selectedShipping.deliveryEstimate}`;
-            noteElem.style.color = "#777";
-        } else {
-            noteElem.textContent = "SELECT A GOVERNORATE TO CALCULATE SHIPPING.";
-            noteElem.style.color = "#555";
-        }
-    }
-
-    updateCheckoutTotals();
-}
-
-function updateCheckoutTotals() {
-    const cart = getStorageArray("zellCart");
-    let subtotal = 0;
-    const checkoutCartItems = document.getElementById("checkoutCartItems");
-
-    if (!checkoutCartItems) return;
-
-    if (cart.length === 0) {
-        checkoutCartItems.innerHTML = `
-            <div style="padding: 20px 0; color: #888; font-size: 11px; letter-spacing: 2px;">
-                YOUR CART IS EMPTY.
-            </div>
-        `;
-    } else {
-        const itemsHTML = cart.map(item => {
-            const itemPrice = Number(item.price) || 0;
-            const itemQty = Number(item.quantity) || 1;
-            const itemTotal = itemPrice * itemQty;
-            const itemSize = item.size || "M";
-
-            subtotal += itemTotal;
-
-            return `
-                <div style="display: flex; justify-content: space-between; margin: 10px 0; border-bottom: 1px solid #222; padding-bottom: 8px;">
-                    <div>
-                        <div style="font-weight: 500; color: #fff;">
-                            ${item.name} <span style="color: #888; font-size: 0.85em;">(SIZE: ${itemSize})</span>
-                        </div>
-                        <div style="font-size: 0.85em; color: #888;">
-                            QTY: ${itemQty} x ${itemPrice} EGP
-                        </div>
-                    </div>
-                    <div style="font-weight: 500; color: #fff;">
-                        ${itemTotal} EGP
-                    </div>
-                </div>
-            `;
-        }).join("");
-
-        checkoutCartItems.innerHTML = itemsHTML;
-    }
-
-    const discountAmount = subtotal * appliedDiscountRate;
-    const shippingCost = selectedShipping ? Number(selectedShipping.cost) : 0;
-    const finalTotal = subtotal - discountAmount + shippingCost;
-
-    const subtotalEl = document.getElementById("subtotalAmount");
-    const discountRow = document.getElementById("discountRow");
-    const discountLabelEl = document.getElementById("discountLabel");
-    const discountEl = document.getElementById("discountAmount");
-    const shippingRow = document.getElementById("shippingRow");
-    const shippingLabelEl = document.getElementById("shippingLabel");
-    const shippingEl = document.getElementById("shippingAmount");
-    const finalTotalEl = document.getElementById("finalTotalAmount");
-    const checkoutTotalHeader = document.getElementById("checkoutTotal");
-
-    if (subtotalEl) subtotalEl.textContent = `${subtotal.toLocaleString()} EGP`;
-    if (finalTotalEl) finalTotalEl.textContent = `${finalTotal.toLocaleString()} EGP`;
-    if (checkoutTotalHeader) checkoutTotalHeader.textContent = `${finalTotal.toLocaleString()} EGP`;
-
-    if (discountRow && discountEl) {
-        if (appliedDiscountRate > 0) {
-            discountRow.style.display = "flex";
-            if (discountLabelEl) discountLabelEl.textContent = appliedDiscountLabel;
-            discountEl.textContent = `-${discountAmount.toLocaleString()} EGP`;
-        } else {
-            discountRow.style.display = "none";
-        }
-    }
-
-    if (shippingRow && shippingEl) {
-        if (selectedShipping) {
-            shippingRow.style.display = "flex";
-            if (shippingLabelEl) {
-                shippingLabelEl.textContent = `SHIPPING — ${selectedShipping.governorate.toUpperCase()}`;
-            }
-            shippingEl.textContent = `${shippingCost.toLocaleString()} EGP`;
-        } else {
-            shippingRow.style.display = "none";
-        }
-    }
-}
-
-function clearAppliedCoupon() {
-    appliedDiscountRate = 0;
-    appliedDiscountLabel = "DISCOUNT";
-    appliedCouponCode = "";
-}
-
-async function applyDiscount(e) {
-    if (e) {
-        e.preventDefault();
-        e.stopPropagation();
-    }
-
-    const couponInputElem = document.getElementById("couponInput");
-    const couponMessage = document.getElementById("couponMessage");
-    const applyBtn = document.getElementById("applyCouponBtn");
-
-    if (!couponInputElem) return;
-
-    const couponInput = couponInputElem.value.trim().toUpperCase();
-
-    function showMessage(text, isSuccess) {
-        if (!couponMessage) return;
-        couponMessage.style.color = isSuccess ? "#4CAF50" : "#ff4d4d";
-        couponMessage.textContent = text;
-    }
-
-    if (couponInput === "") {
-        clearAppliedCoupon();
-        showMessage("Please enter a coupon code.", false);
-        updateCheckoutTotals();
-        return;
-    }
-
-    if (applyBtn) {
-        applyBtn.disabled = true;
-        applyBtn.innerText = "CHECKING...";
-    }
-
-    try {
-        const response = await fetch(`${ZELL_API}/validate-coupon`, {
-            method: "POST",
-            headers: authHeaders(),
-            body: JSON.stringify({ couponCode: couponInput })
-        });
-
-        const data = await response.json();
-
-        if (data.valid) {
-            appliedDiscountRate = Number(data.rate) || 0;
-            appliedDiscountLabel = data.label || "DISCOUNT";
-            appliedCouponCode = data.code || couponInput;
-
-            showMessage(data.message || "Coupon applied.", true);
-        } else {
-            clearAppliedCoupon();
-            showMessage(data.message || "Invalid coupon code.", false);
-        }
-
-    } catch (error) {
-        console.error("Coupon validation error:", error);
-        clearAppliedCoupon();
-        showMessage("Could not verify the coupon. Check your connection.", false);
-
-    } finally {
-        if (applyBtn) {
-            applyBtn.disabled = false;
-            applyBtn.innerText = "APPLY";
-        }
-
-        updateCheckoutTotals();
-    }
-}
-
-/* ------------------------------
-   CHECKOUT
------------------------------- */
-let checkoutInProgress = false;
-
-function setupProductFlip() {
-    const flipBtn = document.getElementById("flipButton");
-    const flipCard = document.getElementById("productFlipCard");
-
-    if (!flipBtn || !flipCard) return;
-
-    flipBtn.addEventListener("click", function () {
-        flipCard.classList.toggle("flipped");
-        flipBtn.classList.toggle("flipped");
-    });
-}
-
-function setupCheckoutPage() {
-    const checkoutForm = document.getElementById("checkoutForm");
-    const submitBtn = document.getElementById("submitOrderBtn");
-
-    if (!checkoutForm || !submitBtn) return;
-
-    const savedUser = getSavedUser();
-
-    if (savedUser) {
-        const emailElem = document.getElementById("customerEmail");
-        const nameElem = document.getElementById("customerName");
-
-        if (emailElem && savedUser.email) emailElem.value = savedUser.email;
-        if (nameElem && savedUser.name && !nameElem.value) nameElem.value = savedUser.name;
-    }
-
-    loadShippingZones();
-    updateCheckoutTotals();
-
-    submitBtn.addEventListener("click", function (e) {
-        e.preventDefault();
-        e.stopImmediatePropagation();
-        executeCheckout(e);
-    });
-
-    checkoutForm.addEventListener("submit", function (e) {
-        e.preventDefault();
-        e.stopImmediatePropagation();
-        executeCheckout(e);
-    });
-}
-
-async function executeCheckout(e) {
-    if (e) {
-        e.preventDefault();
-        e.stopImmediatePropagation();
-    }
-
-    if (checkoutInProgress) return false;
-
-    const orderMessage = document.getElementById("orderMessage");
-    const submitBtn = document.getElementById("submitOrderBtn");
-
-    try {
-        const customerNameElement = document.getElementById("customerName");
-        const emailElement = document.getElementById("customerEmail");
-        const phoneElement = document.getElementById("customerPhone");
-        const addressElement = document.getElementById("customerAddress");
-        const governorateElement = document.getElementById("customerGovernorate");
-
-        const customerName = customerNameElement ? customerNameElement.value.trim() : "";
-        const userEmail = emailElement ? emailElement.value.trim() : "";
-        const phone = phoneElement ? phoneElement.value.trim() : "";
-        const address = addressElement ? addressElement.value.trim() : "";
-        const governorate = governorateElement ? governorateElement.value.trim() : "";
-
-        if (!customerName || !userEmail || !phone || !address) {
-            if (orderMessage) {
-                orderMessage.style.display = "block";
-                orderMessage.style.color = "#ff4d4d";
-                orderMessage.innerText = "Please fill in all shipping details.";
-            }
-            return false;
-        }
-
-        if (!governorate) {
-            if (orderMessage) {
-                orderMessage.style.display = "block";
-                orderMessage.style.color = "#ff4d4d";
-                orderMessage.innerText = "Please select your governorate so we can calculate shipping.";
-            }
-            if (governorateElement) governorateElement.focus();
-            return false;
-        }
-
-        const rawCart = getStorageArray("zellCart");
-
-        if (rawCart.length === 0) {
-            if (orderMessage) {
-                orderMessage.style.display = "block";
-                orderMessage.style.color = "#ff4d4d";
-                orderMessage.innerText = "Your cart is empty!";
-            }
-            return false;
-        }
-
-        const items = rawCart.map(item => {
-            const pId = Number(item.productId || item.id || 1);
-            return {
-                productId: isNaN(pId) ? 1 : pId,
-                quantity: Number(item.quantity || 1),
-                price: Number(item.price || 950),
-                name: item.name || "ZELL Product",
-                size: item.size || "M"
-            };
-        });
-
-        const couponCode = appliedCouponCode;
-        checkoutInProgress = true;
-
-        if (submitBtn) {
-            submitBtn.disabled = true;
-            submitBtn.innerText = "PROCESSING...";
-        }
-
-        const token = localStorage.getItem("zellSessionToken");
-        const headers = { "Content-Type": "application/json" };
-        if (token) headers["Authorization"] = `Bearer ${token}`;
-
-        const response = await fetch(`${ZELL_API}/checkout`, {
-            method: "POST",
-            headers,
-            body: JSON.stringify({
-                items,
-                customerName,
-                userEmail,
-                phone,
-                address,
-                governorate,
-                couponCode
-            })
-        });
-
-        const data = await response.json();
-
-        if (!response.ok) {
-            checkoutInProgress = false;
-
-            if (orderMessage) {
-                orderMessage.style.display = "block";
-                orderMessage.style.color = "#ff4d4d";
-                orderMessage.innerText = data.message || "Failed to place order.";
-            }
-
-            if (submitBtn) {
-                submitBtn.disabled = false;
-                submitBtn.innerText = "CONFIRM & PLACE ORDER";
-            }
-
-            return false;
-        }
-
-        localStorage.removeItem("zellCart");
-
-        if (orderMessage) {
-            orderMessage.style.display = "block";
-            orderMessage.style.color = "#4dff88";
-            const eta = data.shipping && data.shipping.deliveryEstimate
-                ? ` — DELIVERY WITHIN ${data.shipping.deliveryEstimate}`
-                : "";
-
-            orderMessage.innerText = `ORDER PLACED SUCCESSFULLY! CHECK YOUR EMAIL. CODE: ${data.orderCode}${eta}`;
-        }
-
-        if (submitBtn) {
-            submitBtn.disabled = true;
-            submitBtn.innerText = "ORDER PLACED — REDIRECTING...";
-            submitBtn.style.backgroundColor = "#4dff88";
-            submitBtn.style.color = "#000";
-        }
-
-        updateCartBadge();
-        updateCheckoutTotals();
-
-        setTimeout(() => {
-            window.location.assign("test.html");
-        }, 3000);
-
-        return false;
-
-    } catch (error) {
-        console.error("Checkout Error Caught:", error);
-        checkoutInProgress = false;
-
-        if (orderMessage) {
-            orderMessage.style.display = "block";
-            orderMessage.style.color = "#ff4d4d";
-            orderMessage.innerText = "Network/JS Error: " + error.message;
-        }
-
-        if (submitBtn) {
-            submitBtn.disabled = false;
-            submitBtn.innerText = "CONFIRM & PLACE ORDER";
-        }
-    }
-
-    return false;
 }
 
 /* ------------------------------
    INITIALIZATION
 ------------------------------ */
-document.addEventListener("DOMContentLoaded", function () {
-    updateEvidenceCount();
+document.addEventListener("DOMContentLoaded", () => {
     updateAccountLinks();
-    setupAccountPage();
-    setupProfileImage();
     updateCartBadge();
     setupSideNav();
-    setupCheckoutPage();
-    setupProductFlip();
+    setupGlobalNote();
     setupSizeSelector();
     setupVerificationForm();
-
-    setupGlobalNote();
+    setupAccountPage();
     setupBirthdayGreeting();
-
-    if (window.location.pathname.includes("impact.html")) {
-        loadProduct(2);
-    }
-
-    if (window.location.pathname.includes("imagination.html")) {
-        loadProduct(1);
-    }
+    setupProfileImage();
+    updateEvidenceCount();
 });

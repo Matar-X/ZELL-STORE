@@ -1,6 +1,23 @@
 <!DOCTYPE html>
 <html lang="en">
 
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>CASE 017 | ZELL</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body class="case-page">
+
+<div class="noise"></div>
+
 <!-- GLOBAL HEADER -->
 <header class="page-header">
     <a href="test.html" class="brand-link">
@@ -8,22 +25,21 @@
     </a>
 
     <div class="header-right">
-    <a href="cart.html" class="cart-icon-link" aria-label="View Shopping Cart">
-        <!-- أيقونة حقيبة التسوق الموحدة SVG -->
-        <svg class="cart-svg" xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
-            <line x1="3" y1="6" x2="21" y2="6"></line>
-            <path d="M16 10a4 4 0 0 1-8 0"></path>
-        </svg>
-        <span id="cart-badge" class="cart-badge">0</span>
-    </a>
-    
-    <button id="menuToggleBtn" class="menu-toggle-btn" aria-label="Open Menu">
-        <span></span>
-        <span></span>
-        <span></span>
-    </button>
-</div>
+        <a href="cart.html" class="cart-icon-link" aria-label="View Shopping Cart">
+            <svg class="cart-svg" xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+                <line x1="3" y1="6" x2="21" y2="6"></line>
+                <path d="M16 10a4 4 0 0 1-8 0"></path>
+            </svg>
+            <span id="cart-badge" class="cart-badge">0</span>
+        </a>
+        
+        <button id="menuToggleBtn" class="menu-toggle-btn" aria-label="Open Menu">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+    </div>
 </header>
 
 <!-- SIDENAV DRAWER & OVERLAY -->
@@ -40,242 +56,97 @@
     </nav>
 </aside>
 
-<head>
-
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>CASE 017 | ZELL</title>
-
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-
-    <link
-        href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap"
-        rel="stylesheet"
-    >
-
-    <link rel="stylesheet" href="style.css">
-
-</head>
-
-<body class="case-page">
-
-<div class="noise"></div>
-
-
-
-
-
 <main class="case-container">
 
     <section class="case-heading">
-
         <p class="eyebrow">
             ZELL INVESTIGATION ARCHIVE
         </p>
-
         <h1>
             CASE 017
         </h1>
-
         <div class="case-status">
             STATUS: <strong>UNSOLVED</strong>
         </div>
-
     </section>
 
-
     <section class="case-information">
-
         <div class="case-block">
-
             <span>INCIDENT</span>
-
-            <h3>
-                SUDDEN ABDUCTION
-            </h3>
-
+            <h3>SUDDEN ABDUCTION</h3>
         </div>
 
-
         <div class="case-block">
-
             <span>LOCATION</span>
-
-            <h3>
-                UNKNOWN
-            </h3>
-
+            <h3>UNKNOWN</h3>
         </div>
 
-
         <div class="case-block">
-
             <span>TIME</span>
-
-            <h3>
-                01:47 AM
-            </h3>
-
+            <h3>01:47 AM</h3>
         </div>
 
-
         <div class="case-block">
-
             <span>EVIDENCE</span>
-
             <h3>
                 <span id="evidence-count">01</span> / 03
             </h3>
-
         </div>
-
     </section>
 
-
-    <!-- Evidence -->
-
+    <!-- Evidence Grid -->
     <section class="evidence-grid">
 
-
-        <a
-            href="imagination.html"
-            class="evidence-card found"
-            onclick="saveEvidence(1)"
-        >
-
-            <span class="evidence-number">
-                01
-            </span>
-
+        <a href="imagination.html" class="evidence-card found" onclick="saveEvidence(1)">
+            <span class="evidence-number">01</span>
             <div>
-
                 <p>EVIDENCE</p>
-
-                <h2>
-                    THE SEAT
-                </h2>
-
-                <span>
-                    CHAIR
-                </span>
-
+                <h2>THE SEAT</h2>
+                <span>CHAIR</span>
             </div>
-
-            <strong>
-                FOUND
-            </strong>
-
+            <strong>FOUND</strong>
         </a>
 
-
-        <a
-            href="impact.html"
-            class="evidence-card"
-            onclick="saveEvidence(2)"
-        >
-
-            <span class="evidence-number">
-                02
-            </span>
-
+        <a href="impact.html" class="evidence-card" onclick="saveEvidence(2)">
+            <span class="evidence-number">02</span>
             <div>
-
                 <p>EVIDENCE</p>
-
-                <h2>
-                    THE TRACE
-                </h2>
-
-                <span>
-                    UNKNOWN MARK
-                </span>
-
+                <h2>THE TRACE</h2>
+                <span>UNKNOWN MARK</span>
             </div>
-
-            <strong>
-                EXAMINE
-            </strong>
-
+            <strong>EXAMINE</strong>
         </a>
-
 
         <div class="evidence-card locked">
-
-            <span class="evidence-number">
-                03
-            </span>
-
+            <span class="evidence-number">03</span>
             <div>
-
                 <p>EVIDENCE</p>
-
-                <h2>
-                    UNKNOWN
-                </h2>
-
-                <span>
-                    CLASSIFIED
-                </span>
-
+                <h2>UNKNOWN</h2>
+                <span>CLASSIFIED</span>
             </div>
-
-            <strong>
-                LOCKED
-            </strong>
-
+            <strong>LOCKED</strong>
         </div>
-
 
     </section>
 
-
-    <!-- Anonymous message -->
-<section class="anonymous-message">
-
-    <p class="eyebrow">
-        UNKNOWN SENDER
-    </p>
-
-    <h2>
-        "I've left something behind."
-    </h2>
-
-    <p>
-        You just have to know where to look.
-    </p>
-
-    <a
-        href="message.html"
-        class="message-button"
-    >
-        OPEN MESSAGE
-    </a>
-
-</section>
-        >
-
-           
-
-        </div>
-
+    <!-- Anonymous Message -->
+    <section class="anonymous-message">
+        <p class="eyebrow">UNKNOWN SENDER</p>
+        <h2>"I've left something behind."</h2>
+        <p>You just have to know where to look.</p>
+        <a href="message.html" class="message-button">
+            OPEN MESSAGE
+        </a>
     </section>
 
 </main>
 
-
 <footer class="minimal-footer">
-
     <span>ZELL — CASE 017</span>
-
     <span>ARCHIVE / CLASSIFIED</span>
-
 </footer>
-
 
 <script src="script.js"></script>
 
 </body>
-
 </html>

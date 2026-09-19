@@ -21,7 +21,6 @@
 
    <div class="header-right">
     <a href="checkout.html" class="cart-icon-link" aria-label="View Shopping Cart">
-        <!-- أيقونة حقيبة التسوق الموحدة SVG -->
         <svg class="cart-svg" xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
             <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
             <line x1="3" y1="6" x2="21" y2="6"></line>
@@ -36,7 +35,6 @@
         <span></span>
     </button>
 </div>
-
 </header>
 
 <!-- SIDENAV DRAWER & OVERLAY -->
@@ -82,12 +80,8 @@
 </section>
 
 <footer class="minimal-footer">
-    <span>
-        ZELL — THE RENEWAL SERIES
-    </span>
-    <span>
-        ORDER DISPATCH / CLASSIFIED
-    </span>
+    <span>ZELL — THE RENEWAL SERIES</span>
+    <span>ORDER DISPATCH / CLASSIFIED</span>
 </footer>
 
 <script>
@@ -117,7 +111,7 @@
             html += `
                 <div style="display: flex; justify-content: space-between; align-items: center; padding: 18px 0;">
                     <div>
-                        <span style="color: #eee; font-size: 12px; display: block; margin-bottom: 4px;">${item.name}</span>
+                        <span style="color: #eee; font-size: 12px; display: block; margin-bottom: 4px;">${item.name} (${item.size || 'M'})</span>
                         <span style="color: #666; font-size: 9px;">QUANTITY: ${item.quantity || 1}</span>
                     </div>
                     <div>
@@ -145,10 +139,6 @@
     }
 </script>
 
-
-    <script src="script.js"></script>
-</body>
-</html>
-
+<script src="script.js"></script>
 </body>
 </html>
