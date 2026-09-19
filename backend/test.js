@@ -678,6 +678,7 @@ app.post("/checkout", async (req, res) => {
             }
         }
 
+        // تنفيذ عملية إنشاء الطلب وخصم المخزون داخل Transaction
         const createOrderTransaction = db.transaction(() => {
             const orderResult = db.prepare(`
                 INSERT INTO orders (user_id, customer_name, phone, address, total_amount, governorate, shipping_cost, delivery_estimate, coupon_code)
@@ -686,68 +687,62 @@ app.post("/checkout", async (req, res) => {
 
             const orderId = orderResult.lastInsertRowid;
             const insertItem = db.prepare(`INSERT INTO order_items (order_id, product_id, quantity, price, size) VALUES (?, ?, ?, ?, ?)`);
-            const decrementStock = db.prepare(`UPDATE product_stock SET quantity = quantity - ? WHERE product_id = ? AND size = ? AND quantity >= ?`);
+            const decrementStock = db.prepare(`
+                UPDATE product_stock 
+                SET quantity = quantity - ? 
+                WHERE product_id = ? AND size = ?
+            `);
 
             for (const item of orderItemsToInsert) {
                 insertItem.run(orderId, item.productId, item.quantity, item.price, item.size);
-
-                const stockUpdateResult = decrementStock.run(item.quantity, item.productId, item.size, item.quantity);
-                if (stockUpdateResult.changes === 0) {
-                    // مخزون غير كافي (تم شراؤه من طلب آخر في نفس اللحظة) — نلغي كل العملية
-                    throw new Error(`INSUFFICIENT_STOCK:${item.name}:${item.size}`);
-                }
+                decrementStock.run(item.quantity, item.productId, item.size);
             }
 
+            // إذا تم استخدام كود الخصم الخاص بعيد الميلاد، يسجل السنة لعدم تكرار استخدامه
             if (appliedCouponCode === "BDAY15" && userId) {
-                db.prepare("UPDATE users SET birthday_coupon_year = ? WHERE id = ?").run(new Date().getFullYear(), userId);
+                const currentYear = new Date().getFullYear();
+                db.prepare("UPDATE users SET birthday_coupon_year = ? WHERE id = ?").run(currentYear, userId);
             }
+
             return orderId;
         });
 
-        let orderId;
-        try {
-            orderId = createOrderTransaction();
-        } catch (stockError) {
-            if (String(stockError.message).startsWith("INSUFFICIENT_STOCK:")) {
-                const [, itemName, itemSize] = stockError.message.split(":");
-                return res.status(409).json({
-                    message: `Sorry, "${itemName}" in size ${itemSize} just sold out. Please update your cart.`
-                });
-            }
-            throw stockError;
-        }
+        const orderId = createOrderTransaction();
+        const publicOrderCode = `ZELL-${1000 + Number(orderId)}`;
 
-        const publicOrderCode = "ZLL-" + crypto.randomBytes(3).toString("hex").toUpperCase();
+        const orderDetails = {
+            orderId,
+            publicOrderCode,
+            customerName: String(customerName).trim(),
+            phone: String(phone).trim(),
+            address: String(address).trim(),
+            userEmail: cleanEmail,
+            items: orderItemsToInsert,
+            subtotalAmount,
+            discountAmount,
+            couponCode: appliedCouponCode,
+            totalAmount,
+            shipping
+        };
 
-        // إرسال الإيميلات فوراً والانتظار حتى تتم عملية الإرسال بنجاح
-        try {
-            await sendOrderEmail({
-                orderId, publicOrderCode, totalAmount, customerName, phone, address,
-                userEmail: cleanEmail, items: orderItemsToInsert, subtotalAmount, discountAmount,
-                couponCode: appliedCouponCode, shipping
-            });
-        } catch (emailErr) {
-            console.error("EMAIL ERROR:", emailErr.message);
-        }
+        // إرسال الإيميلات
+        await sendOrderEmail(orderDetails);
 
         res.status(201).json({
             message: "Order placed successfully.",
+            orderId,
             orderCode: publicOrderCode,
-            totalAmount,
-            subtotalAmount,
-            discountAmount,
-            shipping: { governorate: shipping.governorate, zoneLabel: shipping.zoneLabel, cost: shipping.cost, deliveryEstimate: shipping.deliveryEstimate }
+            shipping
         });
 
     } catch (error) {
-        console.error("Checkout transaction error:", error);
-        return res.status(500).json({ message: "Failed to process order." });
+        console.error("CHECKOUT ERROR:", error);
+        res.status(500).json({ message: "Failed to process order." });
     }
 });
 
+// تشغيل السيرفر
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-    console.log(`ZELL server is running on port ${PORT}`);
+    console.log(`ZELL Server running on port ${PORT}`);
 });
-
-module.exports = app;
