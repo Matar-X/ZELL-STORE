@@ -1,13 +1,14 @@
-const { Resend } = require("resend");
-const resend = new Resend(process.env.re_ZnTxgc1p_9LRPMMJxdcxF69NvWSheZEhq);
 const express = require("express");
+const { Resend } = require("resend");
 const crypto = require("crypto");
 const bcrypt = require("bcrypt");
 const cors = require("cors");
-const nodemailer = require("nodemailer");
 const path = require("path");
 
 const app = express();
+
+// Initialize Resend Client (حرف صغير هنا)
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 // Middlewares
 app.use(cors());
@@ -34,14 +35,12 @@ app.get("/:page", (req, res, next) => {
 });
 
 // ==============================
-// DATABASE SETUP (Vercel Safe)
+// DATABASE SETUP (SQLite)
 // ==============================
 let db = null;
 try {
     const Database = require("better-sqlite3");
-    const fs = require('fs');
-    // تحديد مسار آمن للقاعدة سواء محلياً أو على Vercel
-  const dbPath = "zell.db";
+    const dbPath = "zell.db";
 
     db = new Database(dbPath);
 
@@ -61,7 +60,6 @@ try {
         )
     `).run();
 
-    // إضافة أعمدة تلقائياً لجدول users في حال كانت قاعدة بيانات قديمة وناقصة الأعمدة دي
     try { db.prepare("ALTER TABLE users ADD COLUMN role TEXT DEFAULT 'user'").run(); } catch (err) {}
     try { db.prepare("ALTER TABLE users ADD COLUMN birthdate TEXT").run(); } catch (err) {}
     try { db.prepare("ALTER TABLE users ADD COLUMN birthday_coupon_year INTEGER").run(); } catch (err) {}
@@ -119,12 +117,9 @@ try {
         )
     `).run();
 
-    // إضافة عمود المقاس لجدول order_items في حال عدم وجوده
     try { db.prepare("ALTER TABLE order_items ADD COLUMN size TEXT DEFAULT 'M'").run(); } catch (err) {}
 
-    // ==============================
     // STOCK PER SIZE
-    // ==============================
     db.prepare(`
         CREATE TABLE IF NOT EXISTS product_stock (
             product_id INTEGER NOT NULL,
@@ -138,7 +133,6 @@ try {
     const AVAILABLE_SIZES = ["M", "L", "XL", "XXL"];
     const DEFAULT_STOCK_PER_SIZE = 6;
 
-    // INITIAL PRODUCTS
     const productCount = db.prepare("SELECT COUNT(*) AS count FROM products").get();
     if (productCount.count === 0) {
         const insertProduct = db.prepare(`
@@ -149,7 +143,6 @@ try {
         insertProduct.run("THE LAST TRACE", 950, "IMPACT", "What happens may disappear. The impact remains.", "images/sudden-abduction-impact.png");
     }
 
-    // تأكد إن كل منتج له صف مخزون لكل مقاس (6 قطع افتراضيًا لكل مقاس)
     const allProducts = db.prepare("SELECT id FROM products").all();
     const insertStockIfMissing = db.prepare(`
         INSERT OR IGNORE INTO product_stock (product_id, size, quantity)
@@ -161,7 +154,7 @@ try {
         }
     }
 } catch (err) {
-    console.log("SQLite skipped or error in Vercel environment:", err.message);
+    console.log("SQLite setup note:", err.message);
 }
 
 // ==============================
@@ -218,23 +211,8 @@ function isBirthdayToday(birthdate) {
 }
 
 // ==============================
-// NODEMAILER CONFIGURATION
-// ==============================
-// ==============================
-// NODEMAILER CONFIGURATION
-// ==============================
-// ==============================
-// NODEMAILER CONFIGURATION
-// ==============================
-// ==============================
-// NODEMAILER CONFIGURATION (Railway IPv4 Fix)
-// ==============================
-// ==============================
 // RESEND EMAIL CONFIGURATION
 // ==============================
-const { Resend } = require("resend");
-
-
 const ADMIN_EMAILS = [
     "omaralisalama8@gmail.com",
     "nadamoamed73@gmail.com",
@@ -244,7 +222,6 @@ const ADMIN_EMAILS = [
 async function sendOrderEmail(orderDetails) {
     if (!orderDetails || !orderDetails.items) return;
 
-    // 1. تجهيز قائمة المنتجات
     const itemsList = orderDetails.items
         .map(item => `<li><strong>${item.name}</strong> | SIZE: ${item.size || 'M'} (x${item.quantity}) - ${item.price} EGP</li>`)
         .join("");
@@ -257,7 +234,6 @@ async function sendOrderEmail(orderDetails) {
         <h3><strong>Total:</strong> ${Number(orderDetails.totalAmount || 0).toFixed(2)} EGP</h3>
     `;
 
-    // 2. تصميم رسالة الأدمن (فيها الآيدي وتفاصيل العميل والطلب)
     const adminHtmlText = `
         <h2>🚨 NEW ORDER RECEIVED (ADMIN NOTIFICATION)</h2>
         <p><strong>Database Order ID:</strong> #${orderDetails.orderId}</p>
@@ -279,7 +255,6 @@ async function sendOrderEmail(orderDetails) {
         ${costBreakdown}
     `;
 
-    // 3. تصميم رسالة العميل (تأكيد الطلب)
     const customerHtmlText = `
         <h2>ORDER CONFIRMATION - ZELL STORE</h2>
         <p>Hi ${orderDetails.customerName}, thank you for your order!</p>
@@ -296,25 +271,22 @@ async function sendOrderEmail(orderDetails) {
     `;
 
     try {
-        // 📧 الرسالة الأولى: بتتبعت للـ 3 أدمنز مع بعض في نفس الوقت
         const adminPromise = resend.emails.send({
             from: "ZELL Store <onboarding@resend.dev>",
-            to: ADMIN_EMAILS, // مصفوفة الـ 3 إيميلات بتوع الأدمن
+            to: ADMIN_EMAILS,
             subject: `🚨 NEW ORDER RECEIVED #${orderDetails.orderId}`,
             html: adminHtmlText
         });
 
-        // 📧 الرسالة الثانية: بتتبعت لإيميل العميل (Customer) فقط
         const customerPromise = resend.emails.send({
             from: "ZELL Store <onboarding@resend.dev>",
-            to: orderDetails.userEmail, // إيميل العميل
+            to: orderDetails.userEmail,
             subject: "Order Confirmation - ZELL Store",
             html: customerHtmlText
         });
 
-        // تشغيل الإرسال للإثنين في نفس الوقت
         await Promise.all([adminPromise, customerPromise]);
-        console.log(`✅ Order emails sent successfully to Admins & Customer for order #${orderDetails.orderId}`);
+        console.log(`✅ Order emails sent successfully for order #${orderDetails.orderId}`);
 
     } catch (error) {
         console.error("❌ Resend Order Email Error:", error.message);
@@ -671,7 +643,6 @@ app.post("/checkout", async (req, res) => {
 
         const totalAmount = subtotalAmount - discountAmount + shipping.cost;
 
-        // التحقق من توفر المخزون لكل قطعة قبل تنفيذ الأوردر
         for (const item of orderItemsToInsert) {
             const stockRow = db.prepare(
                 "SELECT quantity FROM product_stock WHERE product_id = ? AND size = ?"
@@ -685,7 +656,6 @@ app.post("/checkout", async (req, res) => {
             }
         }
 
-        // تنفيذ عملية إنشاء الطلب وخصم المخزون داخل Transaction
         const createOrderTransaction = db.transaction(() => {
             const orderResult = db.prepare(`
                 INSERT INTO orders (user_id, customer_name, phone, address, total_amount, governorate, shipping_cost, delivery_estimate, coupon_code)
@@ -705,7 +675,6 @@ app.post("/checkout", async (req, res) => {
                 decrementStock.run(item.quantity, item.productId, item.size);
             }
 
-            // إذا تم استخدام كود الخصم الخاص بعيد الميلاد، يسجل السنة لعدم تكرار استخدامه
             if (appliedCouponCode === "BDAY15" && userId) {
                 const currentYear = new Date().getFullYear();
                 db.prepare("UPDATE users SET birthday_coupon_year = ? WHERE id = ?").run(currentYear, userId);
@@ -732,15 +701,14 @@ app.post("/checkout", async (req, res) => {
             shipping
         };
 
-       // إرسال الإيميلات في الخلفية بدون تعطيل الـ Checkout
-sendOrderEmail(orderDetails).catch(err => console.error("ORDER EMAIL BG ERROR:", err.message));
+        sendOrderEmail(orderDetails).catch(err => console.error("ORDER EMAIL BG ERROR:", err.message));
 
-res.status(201).json({
-    message: "Order placed successfully.",
-    orderId,
-    orderCode: publicOrderCode,
-    shipping
-});
+        res.status(201).json({
+            message: "Order placed successfully.",
+            orderId,
+            orderCode: publicOrderCode,
+            shipping
+        });
 
     } catch (error) {
         console.error("CHECKOUT ERROR:", error);
@@ -748,7 +716,7 @@ res.status(201).json({
     }
 });
 
-// تشغيل السيرفر
+// Start Server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`ZELL Server running on port ${PORT}`);
