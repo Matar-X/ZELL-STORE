@@ -1,5 +1,4 @@
 const express = require("express");
-const { Resend } = require("resend");
 const crypto = require("crypto");
 const bcrypt = require("bcrypt");
 const cors = require("cors");
@@ -7,12 +6,42 @@ const path = require("path");
 
 const app = express();
 
-// Initialize Resend Client (حرف صغير هنا)
-const resend = new Resend(process.env.RESEND_API_KEY);
-
 // Middlewares
 app.use(cors());
 app.use(express.json({ limit: "1mb" }));
+
+// ==============================
+// BREVO EMAIL INTEGRATION
+// ==============================
+async function sendEmailViaBrevo({ to, subject, htmlContent }) {
+  try {
+    const response = await fetch("https://api.brevo.com/v3/smtp/email", {
+      method: "POST",
+      headers: {
+        "accept": "application/json",
+        "api-key": process.env.BREVO_API_KEY,
+        "content-type": "application/json"
+      },
+      body: JSON.stringify({
+        sender: { name: "ZELL Store", email: "omaralisalama8@gmail.com" },
+        to: Array.isArray(to) ? to.map(e => ({ email: e })) : [{ email: to }],
+        subject: subject,
+        htmlContent: htmlContent
+      })
+    });
+
+    const data = await response.json();
+    if (!response.ok) {
+      console.error("❌ Brevo Error:", data);
+      return false;
+    }
+    console.log("✅ Email sent successfully via Brevo:", data.messageId);
+    return true;
+  } catch (error) {
+    console.error("❌ Email Failed:", error.message);
+    return false;
+  }
+}
 
 // 1. خدمة جميع الملفات الثابتة (CSS, الصور, ملفات الـ HTML) من نفس مجلد الـ backend
 app.use(express.static(__dirname));
@@ -211,7 +240,7 @@ function isBirthdayToday(birthdate) {
 }
 
 // ==============================
-// RESEND EMAIL CONFIGURATION
+// EMAIL CONFIGURATION
 // ==============================
 const ADMIN_EMAILS = [
     "omaralisalama8@gmail.com",
@@ -271,25 +300,23 @@ async function sendOrderEmail(orderDetails) {
     `;
 
     try {
-        const adminPromise = resend.emails.send({
-            from: "ZELL Store <onboarding@resend.dev>",
+        const adminPromise = sendEmailViaBrevo({
             to: ADMIN_EMAILS,
             subject: `🚨 NEW ORDER RECEIVED #${orderDetails.orderId}`,
-            html: adminHtmlText
+            htmlContent: adminHtmlText
         });
 
-        const customerPromise = resend.emails.send({
-            from: "ZELL Store <onboarding@resend.dev>",
+        const customerPromise = sendEmailViaBrevo({
             to: orderDetails.userEmail,
             subject: "Order Confirmation - ZELL Store",
-            html: customerHtmlText
+            htmlContent: customerHtmlText
         });
 
         await Promise.all([adminPromise, customerPromise]);
         console.log(`✅ Order emails sent successfully for order #${orderDetails.orderId}`);
 
     } catch (error) {
-        console.error("❌ Resend Order Email Error:", error.message);
+        console.error("❌ Order Email Error:", error.message);
     }
 }
 
@@ -400,11 +427,10 @@ function generateVerificationCode() {
 
 async function sendVerificationEmail(email, name, code) {
     try {
-        await resend.emails.send({
-            from: "ZELL Store <onboarding@resend.dev>",
+        const success = await sendEmailViaBrevo({
             to: email,
             subject: "Your ZELL verification code",
-            html: `
+            htmlContent: `
                 <div style="font-family: sans-serif; padding: 20px; color: #333;">
                     <h2>Hi ${name},</h2>
                     <p>Your ZELL verification code is:</p>
@@ -414,9 +440,10 @@ async function sendVerificationEmail(email, name, code) {
                 </div>
             `
         });
+        if (!success) throw new Error("Brevo returned error response.");
         console.log(`✅ Verification email sent to ${email}`);
     } catch (error) {
-        console.error("❌ Resend Verification Email Error:", error.message);
+        console.error("❌ Verification Email Error:", error.message);
         throw error;
     }
 }
